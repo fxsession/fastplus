@@ -25,6 +25,7 @@ import org.openfast.template.TemplateRegistry;
 import org.openfast.template.loader.XMLMessageTemplateLoader;
 import org.openfast.Message;
 
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import org.apache.log4j.xml.DOMConfigurator;
@@ -36,6 +37,12 @@ public class SSMMessageConsumer {
 	
     private long startTime;
     private long stopTime;
+    
+    //returns processing duration in microseconds
+    public long getDeltaMcs(){return ((stopTime-startTime)/1000); }
+  //returns processing duration in milliseconds
+    public long getDeltaMs(){return ((stopTime-startTime)/1000000); }
+    
 
 	private final SSMEndpoint endpoint;
     private static TemplateRegistry templateRegistry = null;
@@ -43,7 +50,15 @@ public class SSMMessageConsumer {
     
     private String logFileName = "log4j.xml";
     
+    boolean started = false;
+    
     public boolean traceFlag = false;
+    
+    /**
+     * THis 2 methods were made specifically to be overridden and made some job in ancestors
+     */
+    public void preProcess() {};
+    public void postProcess() {};
 
     /**
      * I assume that log4j.xml file is stored in the same folder as this jar if not specified directly - parapath = null 
@@ -80,11 +95,11 @@ public class SSMMessageConsumer {
 		InitLogging(null);
 		SSMParameters.getInstance().Init(null);
 		
-		endpoint = new SSMEndpoint(Integer.parseInt(SSMParameters.getInstance().readConnectionElementA(SSMParameters.PORT_N)),
-								   SSMParameters.getInstance().readConnectionElementA(SSMParameters.GROUP_IP),
-								   SSMParameters.getInstance().readConnectionElementA(SSMParameters.INTERFACE_IP));
+		endpoint = new SSMEndpoint(Integer.parseInt(SSMConnection.readConnectionElementA(SSMConnection.PORT_N)),
+													SSMConnection.readConnectionElementA(SSMConnection.GROUP_IP),
+													SSMConnection.readConnectionElementA(SSMConnection.INTERFACE_IP));
         try{
-			File templateFile = new File(SSMParameters.getInstance().readConnectionElementA(SSMParameters.TEMPLATE_FILE));
+			File templateFile = new File(SSMConnection.readConnectionElementA(SSMConnection.TEMPLATE_FILE));
 	        XMLMessageTemplateLoader loader = new XMLMessageTemplateLoader();
 	        loader.setLoadTemplateIdFromAuxId(true);
             loader.load(new FileInputStream(templateFile));
@@ -112,11 +127,12 @@ public class SSMMessageConsumer {
         msgInStream.setBlockReader(blockReader);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-            	SimpleDateFormat dt = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss");
+            	SimpleDateFormat dt = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss Z");
             	Date date = new Date();
             	mylogger.info("Application shutdown "+ dt.format(date));
                 connection.close();
                 SSMTrace.getInstance().close();
+                LogManager.shutdown();
             }
         });
 		/**
@@ -124,18 +140,30 @@ public class SSMMessageConsumer {
 		 */
 		SSMTrace.getInstance().initDecoded();
 		SSMTrace.getInstance().initRaw();
+    	mylogger.info("Wait.Connecting ... ");
+    	
         while (true) {
             try {
-                startTime = System.currentTimeMillis();            	 
+                startTime = System.nanoTime();            	 
                 Message message = msgInStream.readMessage();
                 if (message == null) 
                 	break;
+                else
+          		if (!started){
+           			mylogger.info("started... ");
+           			preProcess();
+           			started = true;
+           		}
+                stopTime = System.nanoTime();
+                SSMTrace.getInstance().traceDecoded(message);  
                 processMessage(message);
+                msgInStream.reset();
             }
             catch(final FastException e) {
             	mylogger.error(e);
             }
         }
+        postProcess();
     }
     
     
@@ -148,15 +176,12 @@ public class SSMMessageConsumer {
      * Override for another logic 
      */
     public void processMessage(Message message){
-    	if (message!=null){ 
-    		String msg = message.toString();
-    		SSMTrace.getInstance().traceDecoded(message.toString());  //to trace TRACE_DECODED flag should be raised 	
-            stopTime = System.currentTimeMillis();
-            long delta= stopTime-startTime; 
+
             if (mylogger.isDebugEnabled())
-            	mylogger.debug(delta+ "ms " +msg.length() + "bytes");
+            	mylogger.debug(getDeltaMs()+ "ms " +message.toString().length() + "bytes");
     	}
+    
     }
     
     
-}
+

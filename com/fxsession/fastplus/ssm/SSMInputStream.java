@@ -16,7 +16,7 @@ public class SSMInputStream extends InputStream{
     private boolean tracemode = false;
 
     public SSMInputStream(DatagramChannel dc) {
-    	String ifTraceraw = SSMParameters.getInstance().readConnectionElementA(SSMParameters.TRACE_RAW);
+    	String ifTraceraw = SSMConnection.readConnectionElementA(SSMConnection.TRACE_RAW);
 		if (ifTraceraw.equals("true")){
 			tracemode = true;
 		}

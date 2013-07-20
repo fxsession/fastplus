@@ -1,12 +1,14 @@
 package com.fxsession.fastplus.ssm;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.apache.log4j.Logger;
+import org.openfast.Message;
 
 /**
  * @author Dmitry Vulf
@@ -43,12 +45,15 @@ public class SSMTrace {
 
 	public void initDecoded(){
 		try{
-			String ifTracedecoded = SSMParameters.getInstance().readConnectionElementA(SSMParameters.TRACE_DECODED);
+			String ifTracedecoded = SSMConnection.readConnectionElementA(SSMConnection.TRACE_DECODED);
 			if (ifTracedecoded.equals("true")){
 				isTracedecoded = true;
-				logger.debug("Enabled debug trace");
 				if (decodedFile == null){
-					String FileName = SSMParameters.getInstance().readConnectionElementA(SSMParameters.TRACE_DECODED_FILE);
+					String FileName = SSMConnection.readConnectionElementA(SSMConnection.TRACE_DECODED_FILE);
+					logger.debug("Enabled debug trace to file :"+ FileName);
+					File tmpFile = new File (FileName);
+					if (tmpFile.exists())
+						tmpFile.delete();
 					decodedFile = new RandomAccessFile(FileName,"rw");
 				}
 			}
@@ -57,12 +62,13 @@ public class SSMTrace {
 		}
 	}	
 	
-	public void traceDecoded(String message){
+	public void traceDecoded(Message message){
 		if (isTracedecoded && decodedFile!=null){
+    		String msg = message.toString();
 			FileChannel outChannel = decodedFile.getChannel();
-			ByteBuffer bb = ByteBuffer.allocate(message.length());
+			ByteBuffer bb = ByteBuffer.allocate(msg.length());
 			bb.clear();
-			bb.put(message.getBytes());
+			bb.put(msg.getBytes());
 			bb.flip();
 			try {
 				while (bb.hasRemaining())
@@ -76,12 +82,15 @@ public class SSMTrace {
 
 	public void initRaw(){
 		try{
-			String ifTraceraw = SSMParameters.getInstance().readConnectionElementA(SSMParameters.TRACE_RAW);
+			String ifTraceraw = SSMConnection.readConnectionElementA(SSMConnection.TRACE_RAW);
 			if (ifTraceraw.equals("true")){
-				logger.debug("Enabled raw trace");
 				isTraceraw = true;
 				if (rawFile == null){
-					String FileName = SSMParameters.getInstance().readConnectionElementA(SSMParameters.TRACE_RAW_FILE);
+					String FileName = SSMConnection.readConnectionElementA(SSMConnection.TRACE_RAW_FILE);
+					logger.debug("Enabled raw trace to file: " + FileName);
+					File tmpFile = new File (FileName);
+					if (tmpFile.exists())
+						tmpFile.delete();
 					rawFile = new RandomAccessFile(FileName,"rw");
 				}
 			}

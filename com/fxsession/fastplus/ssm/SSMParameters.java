@@ -25,19 +25,10 @@ public class SSMParameters {
 	
 	
 	private static SSMParameters instance;
-	static public final String GROUP_IP = "groupIp";
-	static public final String INTERFACE_IP ="interfaceIp";
-	static public final String PORT_N="port";
-	static public final String TEMPLATE_FILE ="templateFileName";
-	static public final String TRACE_DECODED = "traceDecoded";
-	static public final String TRACE_DECODED_FILE = "traceDecodedFile";
-	static public final String TRACE_RAW = "traceRaw";
-	static public final String TRACE_RAW_FILE = "traceRawFile";
 	static public final String ROOT_NODE = "settings";
 	static public final String ATTRIBUTE_ID = "id";
 	static public final String SITE_A = "A";
 	static public final String SITE_B = "A";
-	static public final String CONNS_NODE = "connection";
 	
 	
 	private String paramFileName = "fastplus.xml";
@@ -146,13 +137,7 @@ public class SSMParameters {
  	
 		return elValue;
 	}
- 
-	/**
-	 * To simplify reading from connection structure
-	 */
- public String 	readConnectionElementA(String elementName){
-	 return readElement(CONNS_NODE,SITE_A,elementName);
- }
+
 
 
 }
