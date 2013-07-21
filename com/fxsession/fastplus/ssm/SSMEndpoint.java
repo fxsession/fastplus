@@ -19,10 +19,13 @@ import org.apache.log4j.Logger;
 public class SSMEndpoint implements Endpoint{
 	
 	private static Logger mylogger = Logger.getLogger(SSMEndpoint.class);
-	
+
+    private   SSMConnection connection;
+    
     protected int port;
     protected String group;
     protected String ifaddr;
+  
 
     public SSMEndpoint(int port, String group, String ifaddr) {
         this.port = port;
@@ -55,7 +58,8 @@ public class SSMEndpoint implements Endpoint{
             //I haven't find any method detecting that join failed
             mylogger.info("Joining group IP " +  group);
             
-            return new SSMConnection(dc, port, groupIp, localHost);
+            connection = new SSMConnection(dc, port, groupIp, localHost);
+            return connection;
 
         }catch (Exception e) {
             mylogger.error("Exiting application", e);
@@ -71,6 +75,16 @@ public class SSMEndpoint implements Endpoint{
         throw new UnsupportedOperationException();
     }
 
-    public void close() {}
+    public void close() {
+    	connection.close();
+    }
+    
+    public Connection reconnect(int port, String group, String ifaddr) throws FastConnectionException {
+    	close();
+        this.port = port;
+        this.group = group;
+    	this.ifaddr = ifaddr;
+    	return connect();
+    }
 
 }

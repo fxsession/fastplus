@@ -20,6 +20,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
+
+
 public class SSMParameters {
 	private static Logger mylogger = Logger.getLogger(SSMParameters.class);
 	
@@ -27,8 +29,6 @@ public class SSMParameters {
 	private static SSMParameters instance;
 	static public final String ROOT_NODE = "settings";
 	static public final String ATTRIBUTE_ID = "id";
-	static public final String SITE_A = "A";
-	static public final String SITE_B = "A";
 	
 	
 	private String paramFileName = "fastplus.xml";
@@ -138,7 +138,22 @@ public class SSMParameters {
 		return elValue;
 	}
 
-
+	public boolean nodeExists(String nodeName,String nodeAttrib){
+	
+	    boolean retval = false;
+		NodeList nList = doc.getElementsByTagName(nodeName);
+		for(int i=0; i<nList.getLength() ; i++){
+			Node listNode = nList.item(i);
+            if(listNode.getNodeType() == Node.ELEMENT_NODE){
+            	Element listElement = (Element) listNode; 
+            	String lAttrib = listElement.getAttribute(ATTRIBUTE_ID);
+            	if (lAttrib.equals(nodeAttrib)){   //found highlevel node with given attribute
+            	 retval = true;
+            	}
+           	}
+        }
+	    return retval;
+	}
 
 }
 

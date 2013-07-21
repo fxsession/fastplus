@@ -13,13 +13,9 @@ public class SSMInputStream extends InputStream{
     private static final int BUFFER_SIZE = 64 * 1024;
     DatagramChannel datachannel;
     private final ByteBuffer buffer;
-    private boolean tracemode = false;
 
     public SSMInputStream(DatagramChannel dc) {
-    	String ifTraceraw = SSMConnection.readConnectionElementA(SSMConnection.TRACE_RAW);
-		if (ifTraceraw.equals("true")){
-			tracemode = true;
-		}
+
         this.datachannel = dc;
         this.buffer = ByteBuffer.allocate(BUFFER_SIZE);
         buffer.flip();
@@ -38,8 +34,6 @@ public class SSMInputStream extends InputStream{
         if (!buffer.hasRemaining()) {
         	buffer.clear();
             datachannel.receive(buffer);
-            if (tracemode)
-        		SSMTrace.getInstance().traceRaw(buffer);  //to trace TRACE_RAW flag should be raised
             buffer.flip();
         }
         return (buffer.get() & 0xFF);

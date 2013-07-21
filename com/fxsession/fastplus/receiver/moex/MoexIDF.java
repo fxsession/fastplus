@@ -1,10 +1,10 @@
 package com.fxsession.fastplus.receiver.moex;
 
-import java.io.IOException;
+
+
 
 import org.apache.log4j.Logger;
 import org.openfast.Message;
-import org.openfast.session.FastConnectionException;
 import com.fxsession.fastplus.ssm.SSMMessageConsumer;
 /**
  * @author Dmitry Vulf
@@ -12,10 +12,14 @@ import com.fxsession.fastplus.ssm.SSMMessageConsumer;
  * implements IDF logics
  *
  */
-import com.fxsession.fastplus.ssm.SSMMessageConsumer;
+
 
 
 public class MoexIDF extends SSMMessageConsumer{
+	
+	//Settings for the Instrument definition site (IDF)
+	
+	static public final String IDF_A = "IDF-A";
 	
 	static public final String TEMPLATE_ID = "2005";
 	static public final String MESSAGE_ENCODING = "MessageEncoding";
@@ -30,44 +34,37 @@ public class MoexIDF extends SSMMessageConsumer{
 	static public final String FACE_VAL = "FaceValue";
 	static public final String BASE_SWAP_PX = "BaseSwapPx"; 
 	static public final String PRICE_MVM_LIMIT = "PriceMvmLimit"; 
-	
+	//Settings for the Instrument definition site (IDF)
 	
 	
 	private static Logger mylogger = Logger.getLogger(SSMMessageConsumer.class);
 	
+	
 	@Override
-	public void processMessage(Message message){
-		String outp; 
-		if (message.getTemplate().getId().equals(TEMPLATE_ID)){
-			String encodeCharset = message.getString(MESSAGE_ENCODING);
-			outp= message.getString(SYMBOL) + new String("		");
-			outp+= message.getString(SECURITY_DESC) +			new String("			");
-			outp+= message.getString(ENCODED_SECURITY_DESC) + 	new String("			");
-			outp+= message.getString(ENCODED_SHORT_SEC_DESC) + 	new String("			");
-/*			
-			outp+= message.getString(ROUND_LOT) + new String("		");
-			outp+= message.getString(TRADING_SESSION_ID) + new String("		");
-			outp+= message.getString(SECURITY_TRADE_STAT) + new String("		");
-			outp+= message.getString(SECURITY_TRADE_STAT) + new String("		");
-*/			
-			outp+= message.getString(PRICE_MVM_LIMIT)+ new String("		");
-			outp+= message.getString(MIN_PRICE_INC)+ new String("		");
-			outp+= message.getString(FACE_VAL) +  new String("		");
-			outp+= message.getString(BASE_SWAP_PX);
+    public String getSiteID() { 
+    	return IDF_A; } 
+
+	@Override
+	public void processMessage(Message message) {
+			if (message.getTemplate().getId().equals(TEMPLATE_ID)){
+				String outp;
+				outp= message.getString(SYMBOL) + new String("(Symbol)	");
+				outp+= message.getString(SECURITY_DESC) +			new String("(SecurityDesc)			");
+				outp+= message.getString(ENCODED_SHORT_SEC_DESC) + 	new String("(EncodedShortSecurityDesc)		");
+				outp+= message.getString(PRICE_MVM_LIMIT)+ new String("(PriceMvmLimit)	");
+				outp+= message.getString(MIN_PRICE_INC)+ new String("(MinPriceIncrement)	");
+				outp+= message.getString(FACE_VAL) +  new String("(FaceValue)	");
+				outp+= message.getString(BASE_SWAP_PX) + new String ("(BaseSwapPx)");
 			
-			mylogger.info(outp);
-		}
-		else if (message.getTemplate().getId().equals("2008")){ //change later to class definition
-			mylogger.info("Heartbeat " + super.getDeltaMs() + "ms");
-		}else {
-			mylogger.info("Can't identify the template");
-		}
+				mylogger.info(outp);
+			}
+			else if (message.getTemplate().getId().equals("2008")){ //change later to class definition
+				mylogger.info("Heartbeat " + super.getDeltaMs() + "ms");
+			}else {
+				mylogger.info("Can't identify the template");
+			}
 			
 	}
 	
-	@Override
-	 public void preProcess() {
-		//Print header
-	}
 
 }

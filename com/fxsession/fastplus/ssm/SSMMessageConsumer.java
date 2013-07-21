@@ -38,13 +38,23 @@ public class SSMMessageConsumer {
     private long startTime;
     private long stopTime;
     
-    //returns processing duration in microseconds
-    public long getDeltaMcs(){return ((stopTime-startTime)/1000); }
-  //returns processing duration in milliseconds
-    public long getDeltaMs(){return ((stopTime-startTime)/1000000); }
+    /** 
+    *Each side should be identified in the settings xml by assigning to Attribute id ,e.g.  <connection id="Smth"> 
+    * so "Smth" should returned
+    **/     
+    public String getSiteID() { 
+    	return null; } 
     
-
-	private final SSMEndpoint endpoint;
+    //returns processing duration in microseconds
+    public long getDeltaMcs(){
+    	return ((stopTime-startTime)/1000); }
+  //returns processing duration in milliseconds
+    public long getDeltaMs(){
+    	return ((stopTime-startTime)/1000000); }
+    
+   //connectivity object. Constructs connection calling connect() method
+	private final SSMEndpoint endpoint;    
+	
     private static TemplateRegistry templateRegistry = null;
     private MessageBlockReader blockReader =  MessageBlockReader.NULL;
     
@@ -63,7 +73,7 @@ public class SSMMessageConsumer {
     /**
      * I assume that log4j.xml file is stored in the same folder as this jar if not specified directly - parapath = null 
      */
-    private void InitLogging(String parampath){
+    private void initLogging(String parampath){
   	   	String localPath;
     	if (parampath==null){
     		File currentJavaJarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());   
@@ -92,22 +102,37 @@ public class SSMMessageConsumer {
         * Initialization part
         */
           
-		InitLogging(null);
+		initLogging(null);
 		SSMParameters.getInstance().Init(null);
 		
-		endpoint = new SSMEndpoint(Integer.parseInt(SSMConnection.readConnectionElementA(SSMConnection.PORT_N)),
-													SSMConnection.readConnectionElementA(SSMConnection.GROUP_IP),
-													SSMConnection.readConnectionElementA(SSMConnection.INTERFACE_IP));
+        String sitename = getSiteID();
+
+		String port   = SSMConnection.readConnectionElement(sitename,SSMConnection.PORT_N);
+    	String group  = SSMConnection.readConnectionElement(sitename,SSMConnection.GROUP_IP);
+        String ifaddr = SSMConnection.readConnectionElement(sitename,SSMConnection.INTERFACE_IP);
+        String templfile = SSMConnection.readConnectionElement(sitename,SSMConnection.TEMPLATE_FILE);
+        
+		if (port ==null | group ==null | ifaddr == null | templfile ==null)
+		{
+        	mylogger.error("Initialize properly connecton settings. Some of current settings are missed. group IP:" +group +
+        			" port:" + port + " interface IP:" + ifaddr + " Template file:" + templfile);
+            System.exit(-1);
+			
+		}
+		
+		endpoint = new SSMEndpoint(Integer.parseInt(port),group,ifaddr);
+		
+		
         try{
-			File templateFile = new File(SSMConnection.readConnectionElementA(SSMConnection.TEMPLATE_FILE));
+			File templateFile = new File(templfile);
 	        XMLMessageTemplateLoader loader = new XMLMessageTemplateLoader();
 	        loader.setLoadTemplateIdFromAuxId(true);
             loader.load(new FileInputStream(templateFile));
 	        templateRegistry = loader.getTemplateRegistry();
     		mylogger.info("Initialized");
         } catch (Exception e) {
-        	mylogger.error("Exiting application. {} ", e);
-            System.exit(-1);
+        	mylogger.error("Exiting application. ", e);
+            System.exit(-1);   //”¡–¿“‹ !!!!!
         } 
     }
 
@@ -119,18 +144,18 @@ public class SSMMessageConsumer {
 	 * Starts the process
 	 */
     public void start() throws FastConnectionException, IOException {
-        final SSMConnection connection = (SSMConnection) endpoint.connect();
+    	final SSMConnection connection = (SSMConnection) endpoint.connect();
         Context context = new Context();
         context.setTemplateRegistry(templateRegistry);
         MessageInputStream msgInStream = new MessageInputStream(connection.getInputStream(), context);
-    //    setBlockReader();
+    
         msgInStream.setBlockReader(blockReader);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
             	SimpleDateFormat dt = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss Z");
             	Date date = new Date();
             	mylogger.info("Application shutdown "+ dt.format(date));
-                connection.close();
+                endpoint.close();
                 SSMTrace.getInstance().close();
                 LogManager.shutdown();
             }
@@ -138,8 +163,8 @@ public class SSMMessageConsumer {
 		/**
 		 * Initialize trace
 		 */
-		SSMTrace.getInstance().initDecoded();
-		SSMTrace.getInstance().initRaw();
+		SSMTrace.getInstance().initDecoded(getSiteID());
+
     	mylogger.info("Wait.Connecting ... ");
     	
         while (true) {

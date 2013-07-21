@@ -29,6 +29,7 @@ public class SSMConnection implements Connection {
 	
 	private static Logger logger = Logger.getLogger(SSMConnection.class);
 	
+	
     protected DatagramChannel datachannel;
     protected int port;
     protected InetAddress group;
@@ -40,6 +41,11 @@ public class SSMConnection implements Connection {
         this.datachannel = dc;
         this.port = port;
         this.group = group;
+        
+    }
+    
+    public void open() {
+    	
     }
     
     public void close() {
@@ -61,10 +67,10 @@ public class SSMConnection implements Connection {
     }
     
 	/**
-	 * To simplify reading from connection structure
+	 * Metjods to simplify reading from connection structure
 	 */
-    public static String 	readConnectionElementA(String elementName){
-    	return SSMParameters.getInstance().readElement(CONNS_NODE,SSMParameters.SITE_A,elementName);
+    public static String 	readConnectionElement(String siteName,String elementName){
+    	return SSMParameters.getInstance().readElement(CONNS_NODE,siteName,elementName);
     }
 
 

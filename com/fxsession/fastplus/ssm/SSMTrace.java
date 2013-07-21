@@ -27,7 +27,6 @@ public class SSMTrace {
 	private RandomAccessFile decodedFile = null;
 	private RandomAccessFile rawFile = null;
 	private boolean isTracedecoded = false;
-	private boolean isTraceraw = false;
 	
 	private SSMTrace () {
 	}
@@ -43,13 +42,13 @@ public class SSMTrace {
         return instance;
     }	
 
-	public void initDecoded(){
+	public void initDecoded(String Site){
 		try{
-			String ifTracedecoded = SSMConnection.readConnectionElementA(SSMConnection.TRACE_DECODED);
+			String ifTracedecoded = SSMConnection.readConnectionElement(Site,SSMConnection.TRACE_DECODED);
 			if (ifTracedecoded.equals("true")){
 				isTracedecoded = true;
 				if (decodedFile == null){
-					String FileName = SSMConnection.readConnectionElementA(SSMConnection.TRACE_DECODED_FILE);
+					String FileName = SSMConnection.readConnectionElement(Site,SSMConnection.TRACE_DECODED_FILE);
 					logger.debug("Enabled debug trace to file :"+ FileName);
 					File tmpFile = new File (FileName);
 					if (tmpFile.exists())
@@ -79,40 +78,6 @@ public class SSMTrace {
 		}
 	}
 
-
-	public void initRaw(){
-		try{
-			String ifTraceraw = SSMConnection.readConnectionElementA(SSMConnection.TRACE_RAW);
-			if (ifTraceraw.equals("true")){
-				isTraceraw = true;
-				if (rawFile == null){
-					String FileName = SSMConnection.readConnectionElementA(SSMConnection.TRACE_RAW_FILE);
-					logger.debug("Enabled raw trace to file: " + FileName);
-					File tmpFile = new File (FileName);
-					if (tmpFile.exists())
-						tmpFile.delete();
-					rawFile = new RandomAccessFile(FileName,"rw");
-				}
-			}
-		} catch (Exception e) {
-        	logger.error(e);			
-		}
-	}
-	
-	public int traceRaw(ByteBuffer message){
-		int bytesWritten = -1;
-		if (isTraceraw && rawFile!=null){		
-			FileChannel outChannel = rawFile.getChannel();
-			ByteBuffer bb = message.duplicate();
-			bb.flip();
-			try {
-				bytesWritten = outChannel.write(bb);
-			} catch (IOException e) {
-				logger.error(e);
-			}
-		}
-		return bytesWritten;		
-	}
 	
 	public void close(){
 		try {
