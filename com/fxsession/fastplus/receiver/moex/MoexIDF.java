@@ -3,68 +3,100 @@ package com.fxsession.fastplus.receiver.moex;
 
 
 
+import java.util.HashMap;
+
+
+
+
 import org.apache.log4j.Logger;
 import org.openfast.Message;
 import com.fxsession.fastplus.ssm.SSMMessageConsumer;
 /**
  * @author Dmitry Vulf
  * 
- * implements IDF logics
+ * implements IDF(Instruments definition) logic
  *
  */
 
 
 
 public class MoexIDF extends SSMMessageConsumer{
+
+	private static Logger mylogger = Logger.getLogger(MoexIDF.class);
+	private static boolean finished = false;
+	private static int packageCounter = 0;
+	private static boolean heartBeat = false; 
 	
 	//Settings for the Instrument definition site (IDF)
+		
+	static private final String TEMPLATE_ID = "2005";
 	
-	static public final String IDF_A = "IDF-A";
 	
-	static public final String TEMPLATE_ID = "2005";
-	static public final String MESSAGE_ENCODING = "MessageEncoding";
+
 	static public final String SYMBOL = "Symbol";
-	static public final String SECURITY_DESC = "SecurityDesc";
-	static public final String ENCODED_SECURITY_DESC = "EncodedSecurityDesc";
 	static public final String ENCODED_SHORT_SEC_DESC = "EncodedShortSecurityDesc";
-	static public final String ROUND_LOT = "RoundLot";
-	static public final String TRADING_SESSION_ID = "TradingSessionID";
 	static public final String SECURITY_TRADE_STAT = "SecurityTradingStatus";
 	static public final String MIN_PRICE_INC = "MinPriceIncrement";
 	static public final String FACE_VAL = "FaceValue";
 	static public final String BASE_SWAP_PX = "BaseSwapPx"; 
-	static public final String PRICE_MVM_LIMIT = "PriceMvmLimit"; 
-	//Settings for the Instrument definition site (IDF)
 	
+	private HashMap<String, String[]> instruments = new HashMap<String, String[]>(); 	
 	
-	private static Logger mylogger = Logger.getLogger(SSMMessageConsumer.class);
-	
-	
-	@Override
-    public String getSiteID() { 
-    	return IDF_A; } 
-
-	@Override
-	public void processMessage(Message message) {
-			if (message.getTemplate().getId().equals(TEMPLATE_ID)){
-				String outp;
-				outp= message.getString(SYMBOL) + new String("(Symbol)	");
-				outp+= message.getString(SECURITY_DESC) +			new String("(SecurityDesc)			");
-				outp+= message.getString(ENCODED_SHORT_SEC_DESC) + 	new String("(EncodedShortSecurityDesc)		");
-				outp+= message.getString(PRICE_MVM_LIMIT)+ new String("(PriceMvmLimit)	");
-				outp+= message.getString(MIN_PRICE_INC)+ new String("(MinPriceIncrement)	");
-				outp+= message.getString(FACE_VAL) +  new String("(FaceValue)	");
-				outp+= message.getString(BASE_SWAP_PX) + new String ("(BaseSwapPx)");
-			
-				mylogger.info(outp);
-			}
-			else if (message.getTemplate().getId().equals("2008")){ //change later to class definition
-				mylogger.info("Heartbeat " + super.getDeltaMs() + "ms");
-			}else {
-				mylogger.info("Can't identify the template");
-			}
-			
+	public MoexIDF(String id) {
+		super(id);
 	}
 	
+	@Override
+	public void preProcess() {
+		 mylogger.info("Started listening to " + getSiteID()); 
+	};
 
+	@Override
+	public void postProcess() {
+		mylogger.info("Stoped listening to " + getSiteID());
+		if (mylogger.isDebugEnabled()){
+			mylogger.debug("Recorded " + instruments.size() + " entries");
+		}
+	};
+
+	@Override	
+    public boolean isProcessing() {
+    	return (!finished);
+    }
+	
+	
+	@Override
+	public void processMessage(Message message) {
+        String p1,p2,p3,p4,p5;   
+			if (message.getTemplate().getId().equals(TEMPLATE_ID)){
+                p1 = message.getString(SYMBOL);
+				p2 = message.getString(ENCODED_SHORT_SEC_DESC);
+				p3 = message.getString(MIN_PRICE_INC);
+				p4 = message.getString(FACE_VAL);
+				p5 = message.getString(BASE_SWAP_PX);
+				instruments.put(p1, new String[] {p2,p3,p4,p5});
+				
+				if (mylogger.isDebugEnabled()){   
+					//can significantly slow down execution
+					mylogger.debug(SYMBOL + p1 + ENCODED_SHORT_SEC_DESC + p2 + MIN_PRICE_INC +  p3 + FACE_VAL + p4 +BASE_SWAP_PX +p5);
+				}
+				
+				if (heartBeat){
+					//first entry after heartbeat package
+					packageCounter++;
+				}
+				heartBeat = false;
+			}
+			else {
+				//heartbeat 
+					if (mylogger.isDebugEnabled()){				 
+						mylogger.debug("Heartbeat");
+					}
+					if (packageCounter!=0 && heartBeat){
+						//the point is to get 1 full message package to make sure that we got full instrument list and then exit
+						finished = true;
+					}
+				heartBeat = true;
+			}
+	}
 }

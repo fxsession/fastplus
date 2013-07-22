@@ -35,6 +35,11 @@ public class SSMMessageConsumer {
 		
     private static Logger mylogger = Logger.getLogger(SSMMessageConsumer.class);
 	
+    /* 
+     * This variable should coincide with connection attribute id value in the settings file
+     * e.g.  <connection id="IDF-A">  siteID =="IDF-A"   
+     */
+    protected String siteID = null; 
     private long startTime;
     private long stopTime;
     
@@ -43,8 +48,12 @@ public class SSMMessageConsumer {
     * so "Smth" should returned
     **/     
     public String getSiteID() { 
-    	return null; } 
+    	return siteID; }
     
+    //Signals that main class loop can be stopped - overriden   
+    public boolean isProcessing() {
+    	return true;
+    }
     //returns processing duration in microseconds
     public long getDeltaMcs(){
     	return ((stopTime-startTime)/1000); }
@@ -96,12 +105,13 @@ public class SSMMessageConsumer {
    		}  
     }
     
-	
-	public SSMMessageConsumer() {
+    
+	public SSMMessageConsumer(String id) {
         /**
         * Initialization part
         */
-          
+         siteID = id; 
+		
 		initLogging(null);
 		SSMParameters.getInstance().Init(null);
 		
@@ -136,6 +146,8 @@ public class SSMMessageConsumer {
         } 
     }
 
+    	
+
 	/**
 	 * 
 	 * @throws FastConnectionException
@@ -167,7 +179,7 @@ public class SSMMessageConsumer {
 
     	mylogger.info("Wait.Connecting ... ");
     	
-        while (true) {
+        while (isProcessing()) {
             try {
                 startTime = System.nanoTime();            	 
                 Message message = msgInStream.readMessage();
@@ -175,7 +187,7 @@ public class SSMMessageConsumer {
                 	break;
                 else
           		if (!started){
-           			mylogger.info("started... ");
+           			mylogger.info("Started!");
            			preProcess();
            			started = true;
            		}
