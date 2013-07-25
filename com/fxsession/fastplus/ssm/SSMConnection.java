@@ -16,16 +16,11 @@ import java.nio.channels.DatagramChannel;
 
 import org.openfast.session.Connection;
 import org.apache.log4j.Logger;
+
 public class SSMConnection implements Connection {
 	static public final String GROUP_IP = "groupIp";
 	static public final String INTERFACE_IP ="interfaceIp";
 	static public final String PORT_N="port";
-	static public final String TEMPLATE_FILE ="templateFileName";
-	static public final String TRACE_DECODED = "traceDecoded";
-	static public final String TRACE_DECODED_FILE = "traceDecodedFile";
-	static public final String TRACE_RAW = "traceRaw";
-	static public final String TRACE_RAW_FILE = "traceRawFile";
-	static public final String CONNS_NODE = "connection";
 	
 	private static Logger logger = Logger.getLogger(SSMConnection.class);
 	
@@ -66,12 +61,6 @@ public class SSMConnection implements Connection {
         return null;
     }
     
-	/**
-	 * Metjods to simplify reading from connection structure
-	 */
-    public static String 	readConnectionElement(String siteName,String elementName){
-    	return SSMParameters.getInstance().readElement(CONNS_NODE,siteName,elementName);
-    }
 
 
 }
