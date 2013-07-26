@@ -4,10 +4,12 @@ import org.openfast.Message;
 
 public class FPFMessage {
 	private Message message;
+	private int msgSeqNum;  
 	private String key;
 	
-	FPFMessage(Message message) {
-//		this.key=key;
+	public FPFMessage(String key, int msgSeqNum, Message message) {
+		this.key=key;
+		this.msgSeqNum = msgSeqNum;
 		this.message=message;
 	};
 	
@@ -19,4 +21,7 @@ public class FPFMessage {
 		return message;
 	}
 
+	public int getMsgSeqNum(){
+		return msgSeqNum;
+	}
 }

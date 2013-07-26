@@ -8,6 +8,8 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.openfast.Message;
 
+import com.fxsession.fastplus.fpf.FPFeedDispatcher;
+
 
 
 
@@ -21,6 +23,7 @@ import org.openfast.Message;
 
 
 public class MoexFeedIDF extends MoexFeed{
+
 
 	private static Logger mylogger = Logger.getLogger(MoexFeedIDF.class);
 	private static boolean finished = false;
@@ -42,8 +45,8 @@ public class MoexFeedIDF extends MoexFeed{
 	
 	private HashMap<String, String[]> instruments = new HashMap<String, String[]>(); 	
 	
-	public MoexFeedIDF(String id) {
-		super(id);
+	public MoexFeedIDF(FPFeedDispatcher dispatcher) {
+		super(dispatcher);
 	}
 	
     	
@@ -94,5 +97,10 @@ public class MoexFeedIDF extends MoexFeed{
 					}
 				heartBeat = true;
 			}
+	}
+
+	@Override
+	public String getSiteID() {
+		return "IDF-A";
 	}
 }

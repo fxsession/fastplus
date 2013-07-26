@@ -49,7 +49,12 @@ public abstract class FPFeed implements IFPFeed {
     private long stopTime;
 
     //connectivity object. Constructs connection calling connect() method
- 	private final Endpoint endpoint;    
+ 	private final Endpoint endpoint;
+ 	
+ 	//Dispatcher
+ 	protected final FPFeedDispatcher dispatcher;
+
+ 	
  	
     private static TemplateRegistry templateRegistry = null;
     private MessageBlockReader blockReader =  MessageBlockReader.NULL;
@@ -58,12 +63,6 @@ public abstract class FPFeed implements IFPFeed {
      
     private boolean started = false;
     
-    /** 
-    * Each side should be identified in the settings xml by assigning to Attribute id ,e.g.  <connection id="Smth"> 
-    * so "Smth" should returned. Can't be overriden
-    **/     
-    public final String getSiteID() { 
-    	return siteID; }
     
     //Signals that main class loop can be stopped - overriden   
     protected boolean isProcessing() {
@@ -116,12 +115,12 @@ public abstract class FPFeed implements IFPFeed {
     }
     
     
-	public FPFeed(String id) {
+	public FPFeed(FPFeedDispatcher dispatcher) {
         /**
         * Initialization part
         */
-         siteID = id; 
 		
+		this.dispatcher = dispatcher; 
 		initLogging(null);
 		FPFXmlSettings.getInstance().Init(null);
 		
@@ -186,10 +185,10 @@ public abstract class FPFeed implements IFPFeed {
            			preProcess();
            			started = true;
            		}
-                stopTime = System.nanoTime();
                 FPFTrace.getInstance().traceDecoded(message);  
                 processMessage(message);
                 msgInStream.reset();
+                stopTime = System.nanoTime();
             }
             catch(final FastException e) {
             	mylogger.error(e);
@@ -216,6 +215,12 @@ public abstract class FPFeed implements IFPFeed {
     public abstract void processMessage(Message message);    
     
     public abstract Endpoint getEndpoint();
+    
+    /** 
+    * Each side should be identified in the settings xml by assigning to Attribute id ,e.g.  <connection id="Smth"> 
+    * so "Smth" should returned. Can't be overriden
+    **/     
+    public abstract String getSiteID(); 
     
 }
 

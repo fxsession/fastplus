@@ -6,6 +6,7 @@ import org.openfast.session.Endpoint;
 
 import com.fxsession.fastplus.fpf.FPFXmlSettings;
 import com.fxsession.fastplus.fpf.FPFeed;
+import com.fxsession.fastplus.fpf.FPFeedDispatcher;
 import com.fxsession.fastplus.ssm.SSMConnection;
 import com.fxsession.fastplus.ssm.SSMEndpoint;
 
@@ -17,11 +18,10 @@ import com.fxsession.fastplus.ssm.SSMEndpoint;
  *  Main purpose - get SSM connection
  */
 public abstract class MoexFeed extends FPFeed{
-	public MoexFeed(String id) {
-		super(id);
 
+	public MoexFeed(FPFeedDispatcher dispatcher) {
+		super(dispatcher);
 	}
-
 
 	/**
 	 * On this point SSM is applied for all inheritors of MoexFeed
