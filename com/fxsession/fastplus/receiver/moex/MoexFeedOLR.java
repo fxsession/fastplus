@@ -6,18 +6,25 @@ import com.fxsession.fastplus.fpf.FPFeedDispatcher;
 /**
  * @author Dmitry Vulf
  * 
- * Read OBR from second site
+ * Orders feed
  *
  */
-public class MoexFeedOBR2 extends MoexFeedOBR{
-	
-	public MoexFeedOBR2(FPFeedDispatcher dispatcher) {
+public class MoexFeedOLR extends MoexFeed{
+
+	public MoexFeedOLR(FPFeedDispatcher dispatcher) {
 		super(dispatcher);
 	}
 
+
 	@Override
 	public String getSiteID() {
-		return "OBR-B";	}
-	
-	
+		return "OLR-A";
+	}
+
+
+	@Override
+	public String getTemplateID() {
+		return "3310";
+	}
+
 }

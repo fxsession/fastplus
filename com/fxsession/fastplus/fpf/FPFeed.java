@@ -3,6 +3,16 @@ package com.fxsession.fastplus.fpf;
 /**
  * @author Dmitry Vulf
  * Abstract class for all feeds
+ * 
+ * Responsible for applying logic for all feeds. IN fact it's made transport independent ie 
+ * overriding  getEndpoint() will return required Endpoint instance either SSMEndpoint (for MOEX) or 
+ * MulticastClientEndpoint/TcpEndpoint for another venue.It hasn't been tested so far but based on the exmaples provided 
+ * I assume it should work.
+ * 
+ * ProcessMessage was also made abstract - the logic of getting key can be varied from one feed to another that's why it's better to store 
+ * it inside the ending class 
+ * 
+ * GetSideID uniquely identifies the feed and must match connection id= ... in fastplus.xml
  *
  */
 
@@ -220,7 +230,8 @@ public abstract class FPFeed implements IFPFeed {
     * Each side should be identified in the settings xml by assigning to Attribute id ,e.g.  <connection id="Smth"> 
     * so "Smth" should returned. Can't be overriden
     **/     
-    public abstract String getSiteID(); 
+    public abstract String getSiteID();
     
+        
 }
 
