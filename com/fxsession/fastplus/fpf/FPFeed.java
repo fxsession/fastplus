@@ -50,15 +50,11 @@ public abstract class FPFeed implements IFPFeed {
 		
     private static Logger mylogger = Logger.getLogger(FPFeed.class);
 	
-    /* 
-     * This variable should coincide with connection attribute id value in the settings file
-     * e.g.  <connection id="IDF-A">  siteID =="IDF-A"   
-     */
-    protected String siteID = null; 
+ 
     private long startTime;
     private long stopTime;
 
-    //connectivity object. Constructs connection calling connect() method
+
  	private final Endpoint endpoint;
  	
  	//Dispatcher
@@ -67,7 +63,7 @@ public abstract class FPFeed implements IFPFeed {
  	
  	
     private static TemplateRegistry templateRegistry = null;
-    private MessageBlockReader blockReader =  MessageBlockReader.NULL;
+    protected MessageBlockReader blockReader =  MessageBlockReader.NULL;
      
     private String logFileName = "log4j.xml";
      
@@ -75,9 +71,8 @@ public abstract class FPFeed implements IFPFeed {
     
     
     //Signals that main class loop can be stopped - overriden   
-    protected boolean isProcessing() {
-    	return true;
-    }
+    protected boolean isProcessing =true;
+    
     //returns processing duration in microseconds
     protected final long getDeltaMcs(){
     	return ((stopTime-startTime)/1000); }
@@ -85,6 +80,14 @@ public abstract class FPFeed implements IFPFeed {
     protected final long getDeltaMs(){
     	return ((stopTime-startTime)/1000000); }
 
+    
+	public void processHeartbeat(){
+		if (mylogger.isDebugEnabled()){
+			 mylogger.debug("Heartbeat");
+		}
+	}
+
+    
     /**
      * Pre and post processing
      */
@@ -164,7 +167,7 @@ public abstract class FPFeed implements IFPFeed {
         Context context = new Context();
         context.setTemplateRegistry(templateRegistry);
         MessageInputStream msgInStream = new MessageInputStream(connection.getInputStream(), context);
-    
+        setBlockReader();
         msgInStream.setBlockReader(blockReader);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
@@ -183,7 +186,7 @@ public abstract class FPFeed implements IFPFeed {
 
     	mylogger.info("Wait.Connecting ... ");
     	
-        while (isProcessing()) {
+        while (isProcessing) {
             try {
                 startTime = System.nanoTime();            	 
                 Message message = msgInStream.readMessage();
@@ -191,7 +194,7 @@ public abstract class FPFeed implements IFPFeed {
                 	break;
                 else
           		if (!started){
-           			mylogger.info("Started!");
+           			mylogger.info("Connected!");
            			preProcess();
            			started = true;
            		}
@@ -207,10 +210,7 @@ public abstract class FPFeed implements IFPFeed {
         postProcess();
     }
     
-    
-    public void setBlockReader(MessageBlockReader messageBlockReader) {
-        this.blockReader = messageBlockReader;
-    }
+
     
     protected String getTemplFileName(String sitename) {
     	String templfile =  FPFXmlSettings.readConnectionElement(sitename,FPFXmlSettings.TEMPLATE_FILE);
@@ -219,19 +219,13 @@ public abstract class FPFeed implements IFPFeed {
     	return templfile;
    	}
 
-    /**
-     * Perform logic over the message  
-     */
     public abstract void processMessage(Message message);    
     
     public abstract Endpoint getEndpoint();
     
-    /** 
-    * Each side should be identified in the settings xml by assigning to Attribute id ,e.g.  <connection id="Smth"> 
-    * so "Smth" should returned. Can't be overriden
-    **/     
     public abstract String getSiteID();
     
+    public final void stopProcess() { isProcessing = false;}
         
 }
 

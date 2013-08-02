@@ -16,5 +16,5 @@ import org.openfast.Message;
  */
 public interface IFPFHandler {
 	public String getInstrumentID();
-	public void push(Message message); 
+	public OnCommand push(Message message); 
 }

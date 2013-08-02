@@ -1,19 +1,23 @@
 package com.fxsession.fastplus.fpf;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
+
 import java.util.Map;
+
 
 import org.apache.log4j.Logger;
 import org.openfast.Message;
-import org.openfast.MessageBlockReader;
 import org.openfast.session.FastConnectionException;
 
-import com.fxsession.fastplus.handler.moex.MoexHandler;
-import com.fxsession.fastplus.receiver.moex.MoexFeedOBR;
-import com.fxsession.fastplus.receiver.moex.MoexFeedOBR2;
+
+import com.fxsession.fastplus.handler.moex.MoexHandlerIDF;
+import com.fxsession.fastplus.handler.moex.MoexHandlerOLR;
+import com.fxsession.fastplus.handler.moex.MoexHandlerOLS;
+import com.fxsession.fastplus.receiver.moex.MoexFeedIDF;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
+import com.fxsession.fastplus.receiver.moex.MoexFeedOLS;
+
 
 /**
  * @author Dmitry Vulf
@@ -32,62 +36,98 @@ public class FPFeedDispatcher {
 	
 	private static Logger mylogger = Logger.getLogger(FPFeedDispatcher.class);
 	
-	private Map <String, IFPFHandler> handlers;
 	
-  
-	
+	/**
+	* handlers - the map between instrument received from the feed and its handler
+	* 
+	*
+	* key is a concatenation of the Feed.getSideID and Instrument.getInstrumentID
+	* The best way to iterate through this map is :
+	*
+	*			for (Map.Entry<String,IFPFHandler> entry : handlers.entrySet()) {
+	*			    String key = entry.getKey();			    }
+	*
+	*/
+	private Map <String, IFPFHandler> handlers = new HashMap<String,IFPFHandler>();  
+		
 	private final MoexFeedOLR olr_consumer;
+	private final MoexFeedIDF idf_consumer;
+	private final MoexFeedOLS ols_consumer;
 	
-	private void registerHandler(IFPFHandler handler){
-		handlers = new HashMap<String,IFPFHandler>();
-		handlers.put(handler.getInstrumentID(), handler);
+	private void registerHandler(IFPFHandler handler,IFPFeed feed){
+		String mapKey = composeKey(feed,handler.getInstrumentID());
+		handlers.put(mapKey, handler);
 	}
 	
+	private String composeKey (IFPFeed ifeed, String key){
+		
+		String feedKey = ifeed.getSiteID();
+		
+		if (feedKey == null) {
+			throw new IllegalArgumentException(); }
+		
+		return feedKey+key; 
+	}
 	
-	private void listenObr2 (){
+	private void listenOlr(){
 		/**
 		 * Run secondary feed in the background
 		 * Left if to future do far.  Can simuteniously 2 feeds. 
 		 */
-/*		
-		obr_consumer2.setBlockReader(new MessageBlockReader() {
-			byte[] buffer = new byte[4];
-				public boolean readBlock(InputStream in) {
-					try {
-						int numRead = in.read(buffer);
-						if (numRead < buffer.length) {
-						return false;}
-						} catch (IOException e) {
-							return false;   }
-						return true;
-						}
-				public void messageRead(InputStream in, Message message) {
-				}
-        	});
+
         new Thread(new Runnable() {
             public void run() {
                 try {
-                	obr_consumer2.start();        	
+                	olr_consumer.start();        	
                 } catch (Exception e) {
                     mylogger.error( e);
                 }
             }
         }).start();
-*/
+	}
+	
+	private void listenOls(){
+		/**
+		 * Run secondary feed in the background
+		 * Left if to future do far.  Can simuteniously 2 feeds. 
+		 */
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                	ols_consumer.start();        	
+                } catch (Exception e) {
+                    mylogger.error( e);
+                }
+            }
+        }).start();
 	}
 
 	
 	public	FPFeedDispatcher (){
-	    olr_consumer = new MoexFeedOLR(this);
+	    //ols_consumer = new MoexFeedOLS(this);
+		olr_consumer = new MoexFeedOLR(this);
+		idf_consumer = new MoexFeedIDF(this);
+		ols_consumer = new MoexFeedOLS(this);
 	}
 	
-	public void dispatch(String key, int msgSeqNum, Message message){
-		/**
-		 * Dispatching is quite simple 	
-		 */
-		IFPFHandler handler = handlers.get(key);
+	
+	public void dispatch(IFPFeed ifeed, //pointer for feed which called this method ie dispatch(this...)
+						String key, 	//key of the instrument - should explicitly coinside with getInstrumentsID in the handler 
+						int msgSeqNum, 	// for future use - seqNUmber of the record
+						Message message) // the message itself
+	{
+	    
+		IFPFHandler handler = handlers.get(composeKey(ifeed,key));
+
+		
 		if (handler !=null){
-			handler.push(message);
+			OnCommand command = handler.push(message);
+			switch(command){
+				case ON_STOP_FEED : ifeed.stopProcess();
+			default:
+				break;
+			}
 		}else{
 		  if (mylogger.isDebugEnabled())
 		  	mylogger.debug(msgSeqNum + ": " +key);
@@ -98,35 +138,12 @@ public class FPFeedDispatcher {
     public void run(){		 
 		try{
 			//in one thread read from primary site
-    		registerHandler(new MoexHandler());
-
-
-    		/*
-    	     * setBlockerReader works with preambula which can be specific for 
-    	     * for different venues.
-    	     * Here it reads 4 bytes preambula (which is compatible with Micex)
-    	     * To specify new behavior - override this method 
-    		*/
-//    		listenObr2();
-    		
-    		
-            olr_consumer.setBlockReader(new MessageBlockReader() {
-    			byte[] buffer = new byte[4];
-    				public boolean readBlock(InputStream in) {
-    					try {
-    						int numRead = in.read(buffer);
-    						if (numRead < buffer.length) {
-    						return false;}
-    						} catch (IOException e) {
-    							return false;   }
-    						return true;
-    						}
-    				public void messageRead(InputStream in, Message message) {
-    				}
-            	});
-            	
-            olr_consumer.start();
-
+//			registerHandler(new MoexHandlerOLR(),olr_consumer);
+			registerHandler(new MoexHandlerIDF(),idf_consumer);
+			registerHandler(new MoexHandlerOLS(),ols_consumer);
+//			listenOlr();
+			listenOls();
+	          idf_consumer.start();
 			} catch (FastConnectionException e) {
 				System.out.println("Unable to connect to endpoint: " + e.getMessage());
 				System.exit(1);
@@ -134,7 +151,6 @@ public class FPFeedDispatcher {
 				System.out.println("An IO error occurred while consuming messages: " + e.getMessage());
 				System.exit(1);
 			}
-    	    //in the second thread read from secondary site
 	}
 	
 

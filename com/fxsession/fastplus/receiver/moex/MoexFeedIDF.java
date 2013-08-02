@@ -1,6 +1,8 @@
 package com.fxsession.fastplus.receiver.moex;
 
 
+import org.openfast.Message;
+
 import com.fxsession.fastplus.fpf.FPFeedDispatcher;
 
 
@@ -17,6 +19,8 @@ import com.fxsession.fastplus.fpf.FPFeedDispatcher;
 
 public class MoexFeedIDF extends MoexFeed{
 	
+
+	
 	public MoexFeedIDF(FPFeedDispatcher dispatcher) {
 		super(dispatcher);
 	}
@@ -30,4 +34,19 @@ public class MoexFeedIDF extends MoexFeed{
 	public String getTemplateID() {
 		return "2005";
 	}
+	
+	/**
+	 * Logic impemented in MoexFeed doesn't work here. 
+	 */
+	
+	@Override
+	public void processMessage(Message message) {
+		if (message.getTemplate().getId().equals(getTemplateID())){
+			String msgSeqNum = message.getString(MSGSEQNUM);
+			int iMsgSeqNum = Integer.parseInt(msgSeqNum);
+			String key = message.getString(SYMBOL);
+			dispatcher.dispatch(this,key,iMsgSeqNum,message);
+		} 
+	}
+
 }

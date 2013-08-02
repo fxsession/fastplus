@@ -2,8 +2,11 @@ package com.fxsession.fastplus.receiver.moex;
 
 
 
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.openfast.Message;
+import org.openfast.MessageBlockReader;
 import org.openfast.SequenceValue;
 import org.openfast.session.Endpoint;
 
@@ -23,11 +26,10 @@ import com.fxsession.fastplus.ssm.SSMEndpoint;
  */
 public abstract class MoexFeed extends FPFeed{
 	
-	private static Logger mylogger = Logger.getLogger(MoexFeed.class);
 	
-	static private final String SYMBOL = "Symbol";
-	static private final String MSGSEQNUM = "MsgSeqNum";
-	static private final String GROUPMDENTRIES = "GroupMDEntries"; 
+	static protected final String SYMBOL = "Symbol";
+	static protected final String MSGSEQNUM = "MsgSeqNum";
+	static protected final String GROUPMDENTRIES = "GroupMDEntries"; 
 
 
 	public MoexFeed(FPFeedDispatcher dispatcher) {
@@ -55,23 +57,36 @@ public abstract class MoexFeed extends FPFeed{
 	@Override
 	public void processMessage(Message message) {
 		if (message.getTemplate().getId().equals(getTemplateID())){
-			//pack raw message into new construction
+
 			String msgSeqNum = message.getString(MSGSEQNUM);
 			int iMsgSeqNum = Integer.parseInt(msgSeqNum);
 			SequenceValue secval =message.getSequence (GROUPMDENTRIES);
 			String keyValue = null;
 			if (secval.getValues().length>0){
 				keyValue = secval.getValues()[0].getString(SYMBOL);
-				dispatcher.dispatch(keyValue,iMsgSeqNum,message);
+				dispatcher.dispatch(this,keyValue,iMsgSeqNum,message);
 			}
 			
-		} else{ //else heartbeat
-		 if (mylogger.isDebugEnabled()){
-			 mylogger.debug("Heartbeat");
-		 }
 		}
-		
 	}
+	
+	
+    public void setBlockReader() {
+    	this.blockReader =new MessageBlockReader() {
+			byte[] buffer = new byte[4];
+				public boolean readBlock(InputStream in) {
+					try {
+						int numRead = in.read(buffer);
+						if (numRead < buffer.length) {
+						return false;}
+						} catch (IOException e) {
+							return false;   }
+						return true;
+						}
+				public void messageRead(InputStream in, Message message) {
+				}
+        	};    	
+    }
 
-
+		
 }
