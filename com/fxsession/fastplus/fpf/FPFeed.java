@@ -55,7 +55,7 @@ public abstract class FPFeed implements IFPFeed {
     private long stopTime;
 
 
- 	private final Endpoint endpoint;
+ 	private Endpoint endpoint = null;
  	
  	//Dispatcher
  	protected final FPFeedDispatcher dispatcher;
@@ -104,7 +104,7 @@ public abstract class FPFeed implements IFPFeed {
     /**
      * I assume that log4j.xml file is stored in the same folder as this jar if not specified directly - parapath = null 
      */
-    private final void initLogging(String parampath){
+    private final void initLogging(String parampath) throws FastConnectionException{
   	   	String localPath;
     	if (parampath==null){
     		File currentJavaJarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());   
@@ -122,8 +122,8 @@ public abstract class FPFeed implements IFPFeed {
 					throw new IOException ("Paramters file <log4j.xml> can't be found in " + localPath);
             DOMConfigurator.configure(localPath);
    		}catch (Exception e){
-   			System.out.println("Exiting application. " + e.getMessage());
-   			System.exit(-1);
+        	mylogger.error(e);
+   			throw new FastConnectionException(e);
    		}  
     }
     
@@ -132,15 +132,13 @@ public abstract class FPFeed implements IFPFeed {
         /**
         * Initialization part
         */
+		this.dispatcher = dispatcher;
+		try {
+			initLogging(null);
+			FPFXmlSettings.getInstance().Init(null);
 		
-		this.dispatcher = dispatcher; 
-		initLogging(null);
-		FPFXmlSettings.getInstance().Init(null);
-		
-		endpoint = getEndpoint();
-		
-		
-        try{
+			endpoint = getEndpoint();
+
 			File templateFile = new File(getTemplFileName(getSiteID()));
 	        XMLMessageTemplateLoader loader = new XMLMessageTemplateLoader();
 	        loader.setLoadTemplateIdFromAuxId(true);
@@ -149,11 +147,9 @@ public abstract class FPFeed implements IFPFeed {
     		mylogger.info("Initialized");
         } catch (Exception e) {
         	mylogger.error("Exiting application. ", e);
-            System.exit(-1);   //”¡–¿“‹ !!!!!
+        	throw new RuntimeException(e);
         } 
     }
-
-    	
 
 	/**
 	 * 
@@ -203,8 +199,9 @@ public abstract class FPFeed implements IFPFeed {
                 msgInStream.reset();
                 stopTime = System.nanoTime();
             }
-            catch(final FastException e) {
+            catch(Exception e) {
             	mylogger.error(e);
+            	throw new FastConnectionException(e);
             }
         }
         postProcess();
@@ -212,10 +209,12 @@ public abstract class FPFeed implements IFPFeed {
     
 
     
-    protected String getTemplFileName(String sitename) {
+    protected String getTemplFileName(String sitename) throws FastConnectionException{
     	String templfile =  FPFXmlSettings.readConnectionElement(sitename,FPFXmlSettings.TEMPLATE_FILE);
-    	if (templfile==null)
+    	if (templfile==null){
     		mylogger.error("Template file is missig");
+        	throw new FastConnectionException("Template file is missig");
+    	}
     	return templfile;
    	}
 

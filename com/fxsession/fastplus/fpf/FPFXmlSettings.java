@@ -12,6 +12,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.openfast.session.FastConnectionException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -73,7 +74,7 @@ public class FPFXmlSettings {
     /**
      * I assume that paramters xml file is stored in the same folder as this jar if not specified directly - parapath = null 
      */
-    public void Init (String parampath){
+    public void Init (String parampath) throws FastConnectionException{
     	String localPath;
     	if (parampath==null){
     		File currentJavaJarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());   
@@ -96,7 +97,7 @@ public class FPFXmlSettings {
    		}
    		catch (Exception e){
    			System.out.println(e.getMessage());
-   			System.exit(-1);
+   			throw new FastConnectionException(e);
    		}
     }
     

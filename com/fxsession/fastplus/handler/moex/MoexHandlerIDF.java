@@ -18,6 +18,7 @@ public class MoexHandlerIDF implements IFPFHandler{
 	static private final String ROUNDLOT = "RoundLot";
 	static private final String TRADINGSESSIONGRP = "TradingSessionRulesGrp";
 	static private final String TRADINGSESSIONID ="TradingSessionID";
+	
 
 
 	@Override

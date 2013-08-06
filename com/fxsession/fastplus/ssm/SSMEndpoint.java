@@ -42,7 +42,7 @@ public class SSMEndpoint implements Endpoint{
             .toString();
     }
 
-    public Connection connect() throws FastConnectionException {
+	public Connection connect() throws FastConnectionException {
     	
         try {
            	InetAddress localHost = InetAddress.getLocalHost(); 
@@ -63,9 +63,8 @@ public class SSMEndpoint implements Endpoint{
 
         }catch (Exception e) {
             mylogger.error("Exiting application", e);
-           	System.exit(1);
+            throw new FastConnectionException(e);
        }
-    	return null;
     }
 
     public void accept() throws FastConnectionException {

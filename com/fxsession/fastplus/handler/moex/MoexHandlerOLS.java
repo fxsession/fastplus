@@ -35,23 +35,23 @@ public class MoexHandlerOLS implements IFPFHandler{
 
 	@Override
 	public OnCommand push(Message message) {
-/*		
+	
 		SequenceValue secval =message.getSequence (GROUPMDENTRIES);
 		String lastmshprd  = message.getString(LASTSGMPROCEEDED);
 		String rptseq = message.getString(RPTSEQ);
-		String lastfrg  = message.getString(LASTFRG);
+		String msgSeqNum = message.getString(MSGSEQNUM);
 
 		for (int i=0;i < secval.getValues().length;i++){
 			mylogger.info("MDEntryID->" + secval.getValues()[i].getString(MDENTRYID) + 
+								" MsgSeqNum->" + msgSeqNum + 
 								" RptSeq->"+	rptseq +
 								" LastMsgSeqNumProcessed->" + lastmshprd + 
-								" LastFragment->" + lastfrg + " "+
 								" price :"+secval.getValues()[i].getString(MDENTRYPX) + "		[" +  
 								secval.getValues()[i].getString(MDENTRYSIZE)+ 
 						       "]		" +
 						       (secval.getValues()[i].getString(MDENTRYTYPE).trim().equals(BID) ? "bid" : "ask"));
 		}
-*/		
+		
 		return OnCommand.ON_PROCESS;
 	}
 

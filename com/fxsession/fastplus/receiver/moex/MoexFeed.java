@@ -9,6 +9,7 @@ import org.openfast.Message;
 import org.openfast.MessageBlockReader;
 import org.openfast.SequenceValue;
 import org.openfast.session.Endpoint;
+import org.openfast.session.FastConnectionException;
 
 import com.fxsession.fastplus.fpf.FPFXmlSettings;
 import com.fxsession.fastplus.fpf.FPFeed;
@@ -32,7 +33,7 @@ public abstract class MoexFeed extends FPFeed{
 	static protected final String GROUPMDENTRIES = "GroupMDEntries"; 
 
 
-	public MoexFeed(FPFeedDispatcher dispatcher) {
+	public MoexFeed(FPFeedDispatcher dispatcher){
 		super(dispatcher);
 	}
 
@@ -64,6 +65,8 @@ public abstract class MoexFeed extends FPFeed{
 			String keyValue = null;
 			if (secval.getValues().length>0){
 				keyValue = secval.getValues()[0].getString(SYMBOL);
+				if (keyValue ==null) //for some tables (OLS) MOEX put SYMBOL outside the sequence
+					keyValue = message.getString(SYMBOL);
 				dispatcher.dispatch(this,keyValue,iMsgSeqNum,message);
 			}
 			

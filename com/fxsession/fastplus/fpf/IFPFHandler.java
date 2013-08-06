@@ -1,6 +1,11 @@
 
 package com.fxsession.fastplus.fpf;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openfast.DecimalValue;
+import org.openfast.IntegerValue;
 import org.openfast.Message;
 
 
@@ -15,6 +20,13 @@ import org.openfast.Message;
  *
  */
 public interface IFPFHandler {
-	public String getInstrumentID();
-	public OnCommand push(Message message); 
+	static public final String MSGSEQNUM = "MsgSeqNum";
+	static public final String MDENTRYID = "MDEntryID";
+	static public final String MDENTRYPX = "MDEntryPx";
+	static public final String MDENTRYSIZE = "MDEntrySize";
+	static public final String MDENTRYTYPE = "MDEntryType";
+	static public final String MDUPDATEACTION = "MDUpdateAction";
+	
+	String getInstrumentID();
+	OnCommand push(Message message); 
 }

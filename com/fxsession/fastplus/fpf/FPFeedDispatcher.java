@@ -130,27 +130,18 @@ public class FPFeedDispatcher {
 			}
 		}else{
 		  if (mylogger.isDebugEnabled())
-		  	mylogger.debug(msgSeqNum + ": " +key);
+		  	mylogger.debug(ifeed.getSiteID() + "->" + msgSeqNum + ": " +key);
 		}
 		
 	}
 	
     public void run(){		 
-		try{
+
 			//in one thread read from primary site
-//			registerHandler(new MoexHandlerOLR(),olr_consumer);
-			registerHandler(new MoexHandlerIDF(),idf_consumer);
-			registerHandler(new MoexHandlerOLS(),ols_consumer);
-//			listenOlr();
-			listenOls();
-	          idf_consumer.start();
-			} catch (FastConnectionException e) {
-				System.out.println("Unable to connect to endpoint: " + e.getMessage());
-				System.exit(1);
-			} catch (IOException e) {
-				System.out.println("An IO error occurred while consuming messages: " + e.getMessage());
-				System.exit(1);
-			}
+			registerHandler(new MoexHandlerOLR(),olr_consumer);
+//			registerHandler(new MoexHandlerOLS(),ols_consumer);
+			listenOlr();
+//			listenOls();
 	}
 	
 
