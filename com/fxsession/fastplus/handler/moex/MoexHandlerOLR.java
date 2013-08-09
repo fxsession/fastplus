@@ -23,7 +23,9 @@ import com.fxsession.fastplus.fpf.OnCommand;
  */
 public class MoexHandlerOLR implements IFPFHandler, IFPFOrderBook{
 	
-	private static Logger mylogger = Logger.getLogger(MoexHandlerOLR.class);
+	private static Logger myloggerAdd = Logger.getLogger("add_logger");
+	private static Logger myloggerChange = Logger.getLogger("change_logger");
+	private static Logger myloggerDelete = Logger.getLogger("delete_logger");
 
 	static private final String GROUPMDENTRIES = "GroupMDEntries";
 
@@ -46,24 +48,23 @@ public class MoexHandlerOLR implements IFPFHandler, IFPFOrderBook{
 	public OnCommand push(Message message) {
 		OnCommand retval = OnCommand.ON_PROCESS;
 		SequenceValue secval =message.getSequence (GROUPMDENTRIES);
-//		String msgSeqNum = message.getString(MSGSEQNUM);
 
-		for (int i=0;i < secval.getValues().length;i++){ 
+		for (int i=0;i < secval.getValues().length;i++){
 			String Symbol = secval.getValues()[i].getString("Symbol");
-			if (Symbol == getInstrumentID()){ //due to up to 3 sequences in one entry I can get wrong instrument (see MoexFeed implementation)
+			if (Symbol.trim().equals(getInstrumentID())){ //due to up to 3 sequences in one entry I can get wrong instrument (see MoexFeed implementation)
 				OrderBookRecord obr = new OrderBookRecord();
 			    String key =  secval.getValues()[i].getString(MDENTRYID);
-				obr.type = Boolean.getBoolean(secval.getValues()[i].getString(MDENTRYTYPE));
-				obr.size = Integer.getInteger(secval.getValues()[i].getString(MDENTRYSIZE));
-				obr.px = Double.valueOf(secval.getValues()[i].getString(MDENTRYPX));
+				obr.string2Type(secval.getValues()[i].getString(MDENTRYTYPE));
+				obr.string2Size(secval.getValues()[i].getString(MDENTRYSIZE));
+				obr.string2Px(secval.getValues()[i].getString(MDENTRYPX));
+				String rptSeqNum = secval.getValues()[i].getString(RPTSEQ);
 				switch (secval.getValues()[i].getString(MDUPDATEACTION)){
-				case ADD 		: addList.put(key, obr); mylogger.info("add " + key + " " + obr.toString()); break;
-				case UPDATE 	: changeList.put(key, obr) ;mylogger.info("change " + key + " " + obr.toString()); break;
-				case DELETE 	: deleteList.put(key, obr); mylogger.info("delete " + key + " " + obr.toString()); break;
-				default : break; 
+				case ADD 		: addList.put(key, obr); myloggerAdd.info(key + " " + obr.toString() + " " + rptSeqNum); break;
+				case UPDATE 	: changeList.put(key, obr) ;myloggerChange.info(key + " " + obr.toString()+ " " +rptSeqNum); break;
+				case DELETE 	: deleteList.put(key, obr); myloggerDelete.info(key + " " + obr.toString() +" " +rptSeqNum); break;
+				default :break; 
 		       }
 			}
-			
 		}
 		return retval;
 	}

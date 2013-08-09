@@ -128,10 +128,9 @@ public class FPFeedDispatcher {
 			default:
 				break;
 			}
-		}else{
-		  if (mylogger.isDebugEnabled())
-		  	mylogger.debug(ifeed.getSiteID() + "->" + msgSeqNum + ": " +key);
 		}
+	  if (mylogger.isDebugEnabled())
+	  	mylogger.debug(ifeed.getSiteID() + "->" + msgSeqNum + ": " +key);
 		
 	}
 	
