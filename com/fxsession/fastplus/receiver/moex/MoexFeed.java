@@ -5,15 +5,18 @@ package com.fxsession.fastplus.receiver.moex;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.log4j.Logger;
 import org.openfast.Message;
 import org.openfast.MessageBlockReader;
 import org.openfast.SequenceValue;
 import org.openfast.session.Endpoint;
-import org.openfast.session.FastConnectionException;
 
+import com.fxsession.fastplus.fpf.FPFMessage;
 import com.fxsession.fastplus.fpf.FPFXmlSettings;
 import com.fxsession.fastplus.fpf.FPFeed;
 import com.fxsession.fastplus.fpf.FPFeedDispatcher;
+import com.fxsession.fastplus.fpf.IFPField;
+
 import com.fxsession.fastplus.ssm.SSMConnection;
 import com.fxsession.fastplus.ssm.SSMEndpoint;
 
@@ -25,13 +28,9 @@ import com.fxsession.fastplus.ssm.SSMEndpoint;
  *  Main purpose - get SSM connection
  *  and process basic fields
  */
-public abstract class MoexFeed extends FPFeed{
+public abstract class MoexFeed extends FPFeed implements IFPField{
 	
-	
-	static protected final String SYMBOL = "Symbol";
-	static protected final String MSGSEQNUM = "MsgSeqNum";
-	static protected final String GROUPMDENTRIES = "GroupMDEntries"; 
-
+	private static Logger mylogger = Logger.getLogger(MoexFeedOLR.class);
 
 	public MoexFeed(FPFeedDispatcher dispatcher){
 		super(dispatcher);
@@ -50,27 +49,29 @@ public abstract class MoexFeed extends FPFeed{
 	}
 
 	/*
-	 * Basic messages processing is common for all MOEX feeds
-	 * Need specific implementation - override processMessage 
-	 * 
+	 * Basic behavior, better to override to fill message
 	 */
 	
 	@Override
 	public void processMessage(Message message) {
 		if (message.getTemplate().getId().equals(getTemplateID())){
-
-			String msgSeqNum = message.getString(MSGSEQNUM);
-			int iMsgSeqNum = Integer.parseInt(msgSeqNum);
-			SequenceValue secval =message.getSequence (GROUPMDENTRIES);
-			String keyValue = null;
-			if (secval.getValues().length>0){
-				keyValue = secval.getValues()[0].getString(SYMBOL);
-				if (keyValue ==null) //for some tables (OLS) MOEX put SYMBOL outside the sequence
-					keyValue = message.getString(SYMBOL);
-				dispatcher.dispatch(this,keyValue,iMsgSeqNum,message);
+			String value = message.getString(SYMBOL);
+			if (value == null){
+				SequenceValue secval =message.getSequence (GROUPMDENTRIES);
+				for (int i=0;i < secval.getValues().length;i++){
+					value = secval.getValues()[i].getString(FPFMessage.getFieldName(SYMBOL));
+					if (value!=null){
+						FPFMessage fmessage = new FPFMessage(SYMBOL);
+						fmessage.putFieldValue(SYMBOL, value);
+						dispatcher.dispatch(this,fmessage);
+					}
+				}
+			} else {
+				FPFMessage fmessage = new FPFMessage(SYMBOL);
+				fmessage.putFieldValue(SYMBOL, value);
+				dispatcher.dispatch(this,fmessage);
 			}
-			
-		}
+		}	
 	}
 	
 	
@@ -91,5 +92,18 @@ public abstract class MoexFeed extends FPFeed{
         	};    	
     }
 
+	public String getHeartbeatID() {
+		return "2008";
+	}
+
+	protected void processHeartbeat( Message message){
+		if (message.getTemplate().getId().equals(getHeartbeatID())){
+			FPFMessage fmessage = new FPFMessage(HEARTBEAT);
+			dispatcher.dispatch(this,fmessage);
+		}
+		else {
+			mylogger.error("Check Template ID");
+		} 
+	}
 		
 }

@@ -1,11 +1,15 @@
 package com.fxsession.fastplus.handler.moex;
 
-import org.apache.log4j.Logger;
-import org.openfast.Message;
-import org.openfast.SequenceValue;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.log4j.Logger;
+
+import com.fxsession.fastplus.fpf.FPFMessage;
+import com.fxsession.fastplus.fpf.FPFOrderBookL2;
 import com.fxsession.fastplus.fpf.IFPFHandler;
 import com.fxsession.fastplus.fpf.IFPFOrderBook;
+import com.fxsession.fastplus.fpf.IFPField;
+
 import com.fxsession.fastplus.fpf.OnCommand;
 
 /**
@@ -21,52 +25,63 @@ import com.fxsession.fastplus.fpf.OnCommand;
  * Natural Refresh works best for aggregated orderbook feed and for highly liquid securities. 
  *
  */
-public class MoexHandlerOLR implements IFPFHandler, IFPFOrderBook{
+public class MoexHandlerOLR extends FPFOrderBookL2 implements IFPFHandler, IFPField {
+	private static Logger mylogger = Logger.getLogger(MoexHandlerOLR.class);
 	
-	private static Logger myloggerAdd = Logger.getLogger("add_logger");
-	private static Logger myloggerChange = Logger.getLogger("change_logger");
-	private static Logger myloggerDelete = Logger.getLogger("delete_logger");
-
-	static private final String GROUPMDENTRIES = "GroupMDEntries";
-
-
-
+	AtomicInteger  rptSeq = new AtomicInteger(-1);
 	
-	
-	
-	static private final String RPTSEQ = "RptSeq";
-	
-	
-	static private final String BID= "0";  //quote for buy
-	
+	private boolean checkRepeatMessage(String sRpt) {
+		/*
+		 * THis method cuts off duplicate messages coming from the 2 stream. However it cuts only 95% of duplicates 
+		 */
+		Integer iRep =   Integer.valueOf(sRpt);
+		if (iRep ==rptSeq.intValue())
+			return true;
+		else{
+			rptSeq.set(iRep);
+			return false;
+		}
+	} 
+		
 	@Override
 	public String getInstrumentID() {
 		return "EURUSD000TOM";
 	}
 
 	@Override
-	public OnCommand push(Message message) {
-		OnCommand retval = OnCommand.ON_PROCESS;
-		SequenceValue secval =message.getSequence (GROUPMDENTRIES);
-
-		for (int i=0;i < secval.getValues().length;i++){
-			String Symbol = secval.getValues()[i].getString("Symbol");
-			if (Symbol.trim().equals(getInstrumentID())){ //due to up to 3 sequences in one entry I can get wrong instrument (see MoexFeed implementation)
-				OrderBookRecord obr = new OrderBookRecord();
-			    String key =  secval.getValues()[i].getString(MDENTRYID);
-				obr.string2Type(secval.getValues()[i].getString(MDENTRYTYPE));
-				obr.string2Size(secval.getValues()[i].getString(MDENTRYSIZE));
-				obr.string2Px(secval.getValues()[i].getString(MDENTRYPX));
-				String rptSeqNum = secval.getValues()[i].getString(RPTSEQ);
-				switch (secval.getValues()[i].getString(MDUPDATEACTION)){
-				case ADD 		: addList.put(key, obr); myloggerAdd.info(key + " " + obr.toString() + " " + rptSeqNum); break;
-				case UPDATE 	: changeList.put(key, obr) ;myloggerChange.info(key + " " + obr.toString()+ " " +rptSeqNum); break;
-				case DELETE 	: deleteList.put(key, obr); myloggerDelete.info(key + " " + obr.toString() +" " +rptSeqNum); break;
+	public OnCommand push(FPFMessage message) {
+				OnCommand retval = OnCommand.ON_PROCESS;
+			    String rptseq = message.getFieldValue(RPTSEQ);
+			    if (checkRepeatMessage(rptseq))
+			    	return retval;
+				String key =  message.getFieldValue(MDENTRYID);
+			    String type = message.getFieldValue(MDENTRYTYPE);
+			    String size = message.getFieldValue(MDENTRYSIZE);
+			    String px = message.getFieldValue(MDENTRYPX);
+			    String updAction =message.getFieldValue(MDUPDATEACTION); 
+				switch (updAction){
+				case IFPFOrderBook.ADD 		: 
+					if (type.equals(IFPFOrderBook.BID))  
+						addBid(key,size, px); 
+				    else
+						addAsk(key,size, px);  
+				break;
+				case IFPFOrderBook.CHANGE 	:   
+					if (type.equals(IFPFOrderBook.BID))
+						changeBid(key,size, px);
+					else
+						changeAsk(key,size, px);
+			    break;
+				case IFPFOrderBook.DELETE 	: 
+					if (type.equals(IFPFOrderBook.BID)) 
+					  deleteBid(key); 
+					else
+					  deleteAsk(key);
+				break;
 				default :break; 
 		       }
-			}
-		}
+				mylogger.info(getInstrumentID() + " <MDEntryID> " + key + " <MDEntryType> " + type + " <MDEntrySize> "+size + " <MDEntryPx> " + px + " <MDUpdateAction> " + updAction + " <RptSeq> " + rptseq);
+				
 		return retval;
 	}
-
 }

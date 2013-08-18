@@ -31,7 +31,6 @@ import java.util.Date;
 import org.openfast.Context;
 import org.openfast.MessageBlockReader;
 import org.openfast.MessageInputStream;
-import org.openfast.error.FastException;
 import org.openfast.session.Connection;
 import org.openfast.session.Endpoint;
 import org.openfast.session.FastConnectionException;
@@ -81,11 +80,6 @@ public abstract class FPFeed implements IFPFeed {
     	return ((stopTime-startTime)/1000000); }
 
     
-	public void processHeartbeat(){
-		if (mylogger.isDebugEnabled()){
-			 mylogger.debug("Heartbeat");
-		}
-	}
 
     
     /**
@@ -218,7 +212,7 @@ public abstract class FPFeed implements IFPFeed {
     	return templfile;
    	}
 
-    public abstract void processMessage(Message message);    
+    public abstract void processMessage(Message message);
     
     public abstract Endpoint getEndpoint();
     

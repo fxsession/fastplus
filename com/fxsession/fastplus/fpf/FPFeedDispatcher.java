@@ -1,22 +1,17 @@
 package com.fxsession.fastplus.fpf;
 
-import java.io.IOException;
+
 import java.util.HashMap;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 import org.apache.log4j.Logger;
-import org.openfast.Message;
-import org.openfast.session.FastConnectionException;
 
-
-import com.fxsession.fastplus.handler.moex.MoexHandlerIDF;
 import com.fxsession.fastplus.handler.moex.MoexHandlerOLR;
-import com.fxsession.fastplus.handler.moex.MoexHandlerOLS;
-import com.fxsession.fastplus.receiver.moex.MoexFeedIDF;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
-import com.fxsession.fastplus.receiver.moex.MoexFeedOLS;
+import com.fxsession.fastplus.receiver.moex.MoexFeedOLR2;
 
 
 /**
@@ -35,6 +30,8 @@ import com.fxsession.fastplus.receiver.moex.MoexFeedOLS;
 public class FPFeedDispatcher {
 	
 	private static Logger mylogger = Logger.getLogger(FPFeedDispatcher.class);
+	private Integer procCounter = 0;
+	private Integer globalCounter = 0;
 	
 	
 	/**
@@ -51,8 +48,7 @@ public class FPFeedDispatcher {
 	private Map <String, IFPFHandler> handlers = new HashMap<String,IFPFHandler>();  
 		
 	private final MoexFeedOLR olr_consumer;
-	private final MoexFeedIDF idf_consumer;
-	private final MoexFeedOLS ols_consumer;
+	private final MoexFeedOLR olr2_consumer;
 	
 	private void registerHandler(IFPFHandler handler,IFPFeed feed){
 		String mapKey = composeKey(feed,handler.getInstrumentID());
@@ -64,8 +60,11 @@ public class FPFeedDispatcher {
 		String feedKey = ifeed.getSiteID();
 		
 		if (feedKey == null) {
-			throw new IllegalArgumentException(); }
-		
+			throw new IllegalArgumentException("Define feed ID"); }
+
+		if (key == null) {
+			throw new IllegalArgumentException("Define key"); }
+
 		return feedKey+key; 
 	}
 	
@@ -86,16 +85,16 @@ public class FPFeedDispatcher {
         }).start();
 	}
 	
-	private void listenOls(){
+	private void listenOlr2(){
 		/**
 		 * Run secondary feed in the background
-		 * Left if to future do far.  Can simuteniously 2 feeds. 
+		 *  
 		 */
 
         new Thread(new Runnable() {
             public void run() {
                 try {
-                	ols_consumer.start();        	
+                	olr2_consumer.start();        	
                 } catch (Exception e) {
                     mylogger.error( e);
                 }
@@ -107,19 +106,15 @@ public class FPFeedDispatcher {
 	public	FPFeedDispatcher (){
 	    //ols_consumer = new MoexFeedOLS(this);
 		olr_consumer = new MoexFeedOLR(this);
-		idf_consumer = new MoexFeedIDF(this);
-		ols_consumer = new MoexFeedOLS(this);
+		olr2_consumer = new MoexFeedOLR2(this);
 	}
 	
 	
 	public void dispatch(IFPFeed ifeed, //pointer for feed which called this method ie dispatch(this...)
-						String key, 	//key of the instrument - should explicitly coinside with getInstrumentsID in the handler 
-						int msgSeqNum, 	// for future use - seqNUmber of the record
-						Message message) // the message itself
+						FPFMessage message) // the message itself
 	{
-	    
-		IFPFHandler handler = handlers.get(composeKey(ifeed,key));
-
+		procCounter ++;
+		IFPFHandler handler = handlers.get(composeKey(ifeed,message.getKeyFieldValue()));
 		
 		if (handler !=null){
 			OnCommand command = handler.push(message);
@@ -129,19 +124,43 @@ public class FPFeedDispatcher {
 				break;
 			}
 		}
-	  if (mylogger.isDebugEnabled())
-	  	mylogger.debug(ifeed.getSiteID() + "->" + msgSeqNum + ": " +key);
-		
+		else if (mylogger.isDebugEnabled())
+			mylogger.debug(message.getKeyFieldValue());
 	}
 	
-    public void run(){		 
-
+    public void run(){
 			//in one thread read from primary site
-			registerHandler(new MoexHandlerOLR(),olr_consumer);
-//			registerHandler(new MoexHandlerOLS(),ols_consumer);
+    		final MoexHandlerOLR olrHandler = new MoexHandlerOLR();   
+			registerHandler(olrHandler,olr_consumer);
+//			registerHandler(olrHandler,olr2_consumer);
 			listenOlr();
-//			listenOls();
-	}
-	
-
+//			listenOlr2();
+			
+    		/*by now I can only register that feed us down
+    		 *do later reconnection attempt
+    		 */	
+    		new Thread(new Runnable() {
+    			public void run() {
+    				try {
+    					while (true){
+    						Integer intCounter = procCounter;
+    						globalCounter ++;
+    						Thread.sleep(60000);
+    						if (intCounter.equals(procCounter)){
+    							mylogger.info("No response from the feed");
+    						}
+    						else
+    							procCounter = 0;
+    						olrHandler.scanBid();
+    						olrHandler.scanAsk();
+    						
+    						if (globalCounter==2)
+    							System.exit(-1);
+    					}
+    				} catch (Exception e) {
+    					mylogger.error( e);
+    				}
+    			}
+    		}).start();
+    }
 }
