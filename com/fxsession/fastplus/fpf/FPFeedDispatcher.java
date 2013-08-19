@@ -4,7 +4,6 @@ package com.fxsession.fastplus.fpf;
 import java.util.HashMap;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 import org.apache.log4j.Logger;
@@ -153,9 +152,8 @@ public class FPFeedDispatcher {
     							procCounter = 0;
     						olrHandler.scanBid();
     						olrHandler.scanAsk();
-    						
-    						if (globalCounter==2)
-    							System.exit(-1);
+    						//if (globalCounter==3)
+    							//System.exit(-1);
     					}
     				} catch (Exception e) {
     					mylogger.error( e);

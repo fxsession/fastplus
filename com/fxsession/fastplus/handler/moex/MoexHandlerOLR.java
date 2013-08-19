@@ -80,7 +80,7 @@ public class MoexHandlerOLR extends FPFOrderBookL2 implements IFPFHandler, IFPFi
 				break;
 				default :break; 
 		       }
-				mylogger.info(getInstrumentID() + " <MDEntryID> " + key + " <MDEntryType> " + type + " <MDEntrySize> "+size + " <MDEntryPx> " + px + " <MDUpdateAction> " + updAction + " <RptSeq> " + rptseq);
+				mylogger.info(key + " " + type + " "+size + " " + px + " " + updAction + " " + rptseq);
 				
 		return retval;
 	}

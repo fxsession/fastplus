@@ -44,6 +44,11 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 		Integer newSize = OrderBookRecord.string2Size(size);
 		Double _px = OrderBookRecord.string2Px(px);
 		OrderBookRecord obr = bidBook.get(entryId);
+		OrderBookRecord obrnew = new OrderBookRecord(); 
+		obrnew.px = _px;
+		obrnew.size = newSize;
+		bidBook.put(entryId, obrnew);
+		bidloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obrnew.toString());
 		if (obr!=null)
 		{/*however previous value can be absent, 
 		  *due to the late connection - <change> may come for the <add> which hasn't registered 
@@ -51,11 +56,11 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 		  Integer prevsize =obr.size;
 		  changeBidL2(obr.px,newSize,prevsize);
 		}
-		OrderBookRecord obrnew = new OrderBookRecord(); 
-		obrnew.px = _px;
-		obrnew.size = newSize;
-		bidBook.put(entryId, obrnew);
-		bidloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obrnew.toString());
+		else
+			/*
+			 * so I simply add this as a new level
+			 */
+		  changeBidL2(_px,newSize,0);	
 	}
 
 	@Override
@@ -100,18 +105,23 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 		Integer newSize = OrderBookRecord.string2Size(size);
 		Double _px = OrderBookRecord.string2Px(px);
 		OrderBookRecord obr = askBook.get(entryId);
-		if (obr!=null)
-		{/*however previous value can be absent, 
-		  *due to the late connection - <change> may come for the <add> which hasn't registered 
-		  */
-		  Integer prevsize =obr.size;
-		  changeAskL2(obr.px,newSize,prevsize);
-		}
 		OrderBookRecord obrnew = new OrderBookRecord(); 
 		obrnew.px = _px;
 		obrnew.size = newSize;
 		askBook.put(entryId, obr);
 		askloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obrnew.toString());
+		if (obr!=null)
+		{/*however previous value can be absent, 
+		  *due to the late connection - <change> may come for the <add> which hasn't registered 
+		  */
+			Integer prevsize =obr.size;
+	    	changeAskL2(obr.px,newSize,prevsize);
+		}
+		else
+			/*
+			 * so I simply add this as a new level
+			 */
+			changeAskL2(_px,newSize,0);
 	}
 
 	@Override
