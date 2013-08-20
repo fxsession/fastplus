@@ -29,7 +29,7 @@ public class FPFOrderBookL2 extends FPFOrderBookL3{
 	}
 	
 	private void addBidL2new (Double px, Integer size) {
-		if (bidBookL2.size()<=L2_MAX_SIZE)
+		if (bidBookL2.size()<L2_MAX_SIZE)
 				bidBookL2.put(px,size);
 		else // have reached max depth
 		{
@@ -73,12 +73,10 @@ public class FPFOrderBookL2 extends FPFOrderBookL3{
 			else
 				bidBookL2.remove(px);
 		}
-  		else 
-  			bidloggerL2.error("L2: can't delete bid record for price level : " +px); 
 	}
 
 	private void addAskL2new(Double px, Integer size){
-		if (askBookL2.size()<=L2_MAX_SIZE)
+		if (askBookL2.size()<L2_MAX_SIZE)
 			askBookL2.put(px,size);
 		else { // have reached max depth
 			Double lastKey = askBookL2.lastKey(); 
@@ -121,24 +119,26 @@ public class FPFOrderBookL2 extends FPFOrderBookL3{
 			else
 				askBookL2.remove(px);
 		}
-  	else 
-  		askloggerL2.error("L2: can't delete ask record for price level : " +px); 
 	}
 	
 	public void scanBid(){
 		//scans current status of the bid
+		//while displaying it should be reversed
    	    for (Map.Entry<Double,Integer> entry : bidBookL2.entrySet()) {
 	            bidloggerL2.info(entry.getKey() + " " +
 	                               entry.getValue());
 	        }		
+   	 bidloggerL2.info("--->" + bidBook.size());
 	}
 
 	public void scanAsk(){
 		//scans current status of the bid
+		//while displaying it should be reversed
 		for (Map.Entry<Double,Integer> entry : askBookL2.entrySet()) {
 			  askloggerL2.info(entry.getKey() + " " +
 	                               entry.getValue());
 	        }		
+		askloggerL2.info("--->" + askBook.size());
 	}
 
 }

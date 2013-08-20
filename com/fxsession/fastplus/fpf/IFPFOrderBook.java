@@ -15,7 +15,10 @@ public interface IFPFOrderBook {
 	class OrderBookRecord {
 		 public Integer size = null;
 		 public Double px = null;
-		 public String toString(){return new String(size + " " +px);}
+		 public Long logtime; 
+		 public String toString(){
+			 return new String(size + " " +px);
+		 }
 		 public static Integer string2Size(String _size) { 
 			 if (_size!=null)   
 				 return Integer.valueOf(_size); 

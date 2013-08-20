@@ -152,8 +152,8 @@ public class FPFeedDispatcher {
     							procCounter = 0;
     						olrHandler.scanBid();
     						olrHandler.scanAsk();
-    						//if (globalCounter==3)
-    							//System.exit(-1);
+    						if (globalCounter==3)
+    							System.exit(-1);
     					}
     				} catch (Exception e) {
     					mylogger.error( e);

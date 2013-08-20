@@ -31,6 +31,7 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 		OrderBookRecord obr = new OrderBookRecord(); 
 		obr.size = OrderBookRecord.string2Size(size);
 		obr.px = OrderBookRecord.string2Px(px);
+		obr.logtime =System.nanoTime();
 		bidBook.put(entryId, obr);
 		bidloggerL3.info(entryId + " " + IFPFOrderBook.ADD + " " + obr.toString());
 		addBidL2(obr.px,obr.size);		
@@ -47,6 +48,7 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 		OrderBookRecord obrnew = new OrderBookRecord(); 
 		obrnew.px = _px;
 		obrnew.size = newSize;
+		obrnew.logtime =System.nanoTime();
 		bidBook.put(entryId, obrnew);
 		bidloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obrnew.toString());
 		if (obr!=null)
@@ -92,6 +94,7 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 		OrderBookRecord obr = new OrderBookRecord(); 
 		obr.size = OrderBookRecord.string2Size(size);
 		obr.px = OrderBookRecord.string2Px(px);
+		obr.logtime =System.nanoTime();
 		askBook.put(entryId, obr);
 		askloggerL3.info(entryId + " " + IFPFOrderBook.ADD + " " + obr.toString());
 		addAskL2(obr.px,obr.size);		
@@ -108,7 +111,8 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 		OrderBookRecord obrnew = new OrderBookRecord(); 
 		obrnew.px = _px;
 		obrnew.size = newSize;
-		askBook.put(entryId, obr);
+		obrnew.logtime =System.nanoTime();
+		askBook.put(entryId, obrnew);
 		askloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obrnew.toString());
 		if (obr!=null)
 		{/*however previous value can be absent, 
