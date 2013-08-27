@@ -1,7 +1,5 @@
 package com.fxsession.fastplus.receiver.moex;
 
-
-
 import org.openfast.Message;
 import org.openfast.SequenceValue;
 
@@ -11,40 +9,38 @@ import com.fxsession.fastplus.fpf.FPFeedDispatcher;
 /**
  * @author Dmitry Vulf
  * 
- * Orders snapshoot
- *
+ * Aggregated OrderBook Feeds(OBR),  
+ * 20 best prices 
  */
-public class MoexFeedOLS extends MoexFeed {
+public class MoexFeedOBR extends MoexFeed{
 
 	/**
-	 * @param dispatcher
+	 * 
 	 */
-	public MoexFeedOLS(FPFeedDispatcher dispatcher) {
+	public MoexFeedOBR(FPFeedDispatcher dispatcher) {
 		super(dispatcher);
 	}
 
 	@Override
 	public String getTemplateID() {
-		return "3300";
-	}
-
-	@Override
-	public String getSiteID() {
-		return "OLS-A";
+		return "3312";
 	}
 	
+	@Override
+	public String getSiteID() {
+		return "OBR-A";
+	}
+
 	@Override
 	public void processMessage(Message message) {
 		if (message.getTemplate().getId().equals(getTemplateID())){
 			FPFMessage fmessage = new FPFMessage(SYMBOL); 	
 			String value = message.getString(FPFMessage.getFieldName(MSGSEQNUM));
 			fmessage.putFieldValue(MSGSEQNUM, value);
-			value = message.getString(FPFMessage.getFieldName(SYMBOL));
-			fmessage.putFieldValue(SYMBOL, value);
-            value = message.getString(FPFMessage.getFieldName(RPTSEQ));
-	        fmessage.putFieldValue(RPTSEQ, value);
 			SequenceValue secval =message.getSequence (FPFMessage.getFieldName(GROUPMDENTRIES));
 			for (int i=0;i < secval.getValues().length;i++){
+				value = secval.getValues()[i].getString(FPFMessage.getFieldName(SYMBOL));
+				fmessage.putFieldValue(SYMBOL, value);
 				value =  secval.getValues()[i].getString(FPFMessage.getFieldName(MDENTRYID));
 				fmessage.putFieldValue(MDENTRYID, value);
 		        value = secval.getValues()[i].getString(FPFMessage.getFieldName(MDENTRYTYPE));
@@ -53,13 +49,15 @@ public class MoexFeedOLS extends MoexFeed {
 		        fmessage.putFieldValue(MDENTRYSIZE, value);
 		        value = secval.getValues()[i].getString(FPFMessage.getFieldName(MDENTRYPX));
 		        fmessage.putFieldValue(MDENTRYPX, value);
+		        value = secval.getValues()[i].getString(FPFMessage.getFieldName(RPTSEQ));
+		        fmessage.putFieldValue(RPTSEQ, value);
+				value = secval.getValues()[i].getString(FPFMessage.getFieldName(MDUPDATEACTION));
+				fmessage.putFieldValue(MDUPDATEACTION, value);
 				dispatcher.dispatch(this,fmessage);
 			}
-			
 		}
 		else 
 		 processHeartbeat(message); 
 	}
-
 
 }

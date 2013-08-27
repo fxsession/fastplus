@@ -8,9 +8,13 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
 import com.fxsession.fastplus.handler.moex.MoexHandlerOLR;
+import com.fxsession.fastplus.handler.moex.MoexHandlerOLS;
+import com.fxsession.fastplus.receiver.moex.MoexFeedOBR;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOLR2;
+import com.fxsession.fastplus.receiver.moex.MoexFeedOLS;
 
 
 /**
@@ -29,6 +33,7 @@ import com.fxsession.fastplus.receiver.moex.MoexFeedOLR2;
 public class FPFeedDispatcher {
 	
 	private static Logger mylogger = Logger.getLogger(FPFeedDispatcher.class);
+	
 	private Integer procCounter = 0;
 	private Integer globalCounter = 0;
 	
@@ -48,6 +53,8 @@ public class FPFeedDispatcher {
 		
 	private final MoexFeedOLR olr_consumer;
 	private final MoexFeedOLR olr2_consumer;
+	private final MoexFeedOLS ols_consumer;
+	private final MoexFeedOBR obr_consumer;
 	
 	private void registerHandler(IFPFHandler handler,IFPFeed feed){
 		String mapKey = composeKey(feed,handler.getInstrumentID());
@@ -101,11 +108,48 @@ public class FPFeedDispatcher {
         }).start();
 	}
 
+
+	private void listenOls(){
+		/**
+		 * OLS
+		 *  
+		 */
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                	ols_consumer.start();        	
+                } catch (Exception e) {
+                    mylogger.error( e);
+                }
+            }
+        }).start();
+	}
+
+	private void listenObr(){
+		/**
+		 * OBR
+		 *  
+		 */
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                	obr_consumer.start();        	
+                } catch (Exception e) {
+                    mylogger.error( e);
+                }
+            }
+        }).start();
+	}
+
 	
 	public	FPFeedDispatcher (){
 	    //ols_consumer = new MoexFeedOLS(this);
 		olr_consumer = new MoexFeedOLR(this);
 		olr2_consumer = new MoexFeedOLR2(this);
+		ols_consumer = new MoexFeedOLS(this);
+		obr_consumer = new MoexFeedOBR(this);
 	}
 	
 	
@@ -123,42 +167,52 @@ public class FPFeedDispatcher {
 				break;
 			}
 		}
-		else if (mylogger.isDebugEnabled())
-			mylogger.debug(message.getKeyFieldValue());
+		else if (mylogger.isDebugEnabled()){
+				mylogger.debug(message.getKeyFieldValue());
+		}
 	}
 	
     public void run(){
 			//in one thread read from primary site
+    		//OLR
     		final MoexHandlerOLR olrHandler = new MoexHandlerOLR();   
 			registerHandler(olrHandler,olr_consumer);
-//			registerHandler(olrHandler,olr2_consumer);
 			listenOlr();
-//			listenOlr2();
-			
+			//OLS
+			/*
+			final MoexHandlerOLS olsHandler = new MoexHandlerOLS();
+			registerHandler(olsHandler,ols_consumer);
+			listenOls();
+			 */
+			//OBR
+    		final MoexHandlerOBR obrHandler = new MoexHandlerOBR();   
+			registerHandler(obrHandler,obr_consumer);
+			listenObr();
+
     		/*by now I can only register that feed us down
     		 *do later reconnection attempt
-    		 */	
+    		 */
+/*			
     		new Thread(new Runnable() {
     			public void run() {
     				try {
+    					
     					while (true){
-    						Integer intCounter = procCounter;
-    						globalCounter ++;
-    						Thread.sleep(60000);
-    						if (intCounter.equals(procCounter)){
-    							mylogger.info("No response from the feed");
-    						}
-    						else
-    							procCounter = 0;
-    						olrHandler.scanBid();
-    						olrHandler.scanAsk();
-    						if (globalCounter==3)
-    							System.exit(-1);
+    						Thread.sleep(10000);// 5 -second
+    						
+							olrHandler.scanBid();
+   							olrHandler.logBidWeighted();
+   							olrHandler.scanAsk();
+   							olrHandler.logAskWeighted();
+   							
+//    						if (globalCounter==5)
+//    							System.exit(-1);
     					}
     				} catch (Exception e) {
     					mylogger.error( e);
     				}
     			}
     		}).start();
+*/    		
     }
 }

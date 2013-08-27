@@ -58,4 +58,11 @@ public class FPFMessage implements IFPField{
 		this.keyField = keyF;
 		putFieldValue(HEARTBEAT,"HB");
 	}
+	
+	public boolean isHeartBeat() {
+		if (this.keyField.equals(HEARTBEAT))
+			return true;
+		else
+			return false;
+	}
 }

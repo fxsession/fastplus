@@ -10,10 +10,10 @@ import org.apache.log4j.Logger;
  */
 
 
-public class FPFOrderBookL3 implements IFPFOrderBook{
+public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 
-	private static Logger askloggerL3 = Logger.getLogger("L3askLooger");
-	private static Logger bidloggerL3 = Logger.getLogger("L3bidLooger");
+	private  Logger askloggerL3 = Logger.getLogger("L3askLooger");
+	private  Logger bidloggerL3 = Logger.getLogger("L3bidLooger");
 		
 	public FPFOrderBookL3() {
 
@@ -79,9 +79,9 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 			bidBook.remove(entryId);			
 		}
 	}
-	protected  void addBidL2(Double px, Integer size) {return;}
-	protected  void changeBidL2(Double px, Integer size, Integer prevsize) {return;}
-	protected  void deleteBidL2(Double px, Integer size) {return;}
+	protected  abstract void addBidL2(Double px, Integer size);
+	protected  abstract void changeBidL2(Double px, Integer size, Integer prevsize);
+	protected  abstract void deleteBidL2(Double px, Integer size);
 
 	/*
 	 * ASK PART
@@ -116,7 +116,7 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 		askloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obrnew.toString());
 		if (obr!=null)
 		{/*however previous value can be absent, 
-		  *due to the late connection - <change> may come for the <add> which hasn't registered 
+		  *due to the late connection - <change> may come for the <add> which hasn't been registered 
 		  */
 			Integer prevsize =obr.size;
 	    	changeAskL2(obr.px,newSize,prevsize);
@@ -146,7 +146,7 @@ public class FPFOrderBookL3 implements IFPFOrderBook{
 	/*
 	 * This methods are overridden on the L2 level
 	 */
-	protected  void addAskL2(Double px, Integer size) {return;}
-	protected  void changeAskL2(Double px, Integer size, Integer prevsize) {return;}
-	protected  void deleteAskL2(Double px, Integer size) {return;}
+	protected  abstract void addAskL2(Double px, Integer size);
+	protected  abstract void changeAskL2(Double px, Integer size, Integer prevsize);
+	protected  abstract void deleteAskL2(Double px, Integer size);
 }
