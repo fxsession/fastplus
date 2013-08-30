@@ -25,7 +25,7 @@ public class SSMEndpoint implements Endpoint{
     protected int port;
     protected String group;
     protected String ifaddr;
-  
+   
 
     public SSMEndpoint(int port, String group, String ifaddr) {
         this.port = port;
@@ -34,7 +34,7 @@ public class SSMEndpoint implements Endpoint{
     }
     
     public String toString() {
-        return new StringBuilder(getClass().getName())
+        return new StringBuilder()
             .append("[").append("group=").append(group)
             .append(",").append("port=").append(port)
             .append(",").append("ifaddr=").append(ifaddr)
@@ -56,13 +56,13 @@ public class SSMEndpoint implements Endpoint{
             //From now on, all multicast traffic generated in this socket will be output from the interface chosen	                
             dc.join(groupIp,source_interf,InetAddress.getByName(ifaddr));
             //I haven't find any method detecting that join failed
-            mylogger.info("Joining group IP " +  group + ":" + port);
+            mylogger.info("joining group IP " +  group + ":" + port);
             
             connection = new SSMConnection(dc, port, groupIp, localHost);
             return connection;
 
         }catch (Exception e) {
-            mylogger.error("Exiting application", e);
+            mylogger.error("exiting application", e);
             throw new FastConnectionException(e);
        }
     }
@@ -76,14 +76,6 @@ public class SSMEndpoint implements Endpoint{
 
     public void close() {
     	connection.close();
-    }
-    
-    public Connection reconnect(int port, String group, String ifaddr) throws FastConnectionException {
-    	close();
-        this.port = port;
-        this.group = group;
-    	this.ifaddr = ifaddr;
-    	return connect();
     }
 
 }

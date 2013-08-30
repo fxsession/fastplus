@@ -22,4 +22,9 @@ public class MoexHandlerIDF implements IFPFHandler{
 		OnCommand retval = OnCommand.ON_PROCESS;
 		return retval;
 	}
+
+	@Override
+	public boolean checkRepeatMessage(String sRpt) {
+		return false;
+	}
 }

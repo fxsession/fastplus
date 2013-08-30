@@ -16,4 +16,5 @@ package com.fxsession.fastplus.fpf;
 public interface IFPFHandler {
 	String getInstrumentID();
 	OnCommand push(FPFMessage message);
+	boolean checkRepeatMessage(String sRpt);
 }

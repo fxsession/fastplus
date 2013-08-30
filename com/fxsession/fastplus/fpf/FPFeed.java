@@ -86,11 +86,11 @@ public abstract class FPFeed implements IFPFeed {
      * Pre and post processing
      */
     protected void preProcess() {
-   	 	mylogger.info("Started listening to " + getSiteID());
+   	 	mylogger.info("started listening to " + getSiteID());
     }
     
     protected void postProcess(){
-    	mylogger.info("Stoped listening to " + getSiteID());
+    	mylogger.info("stoped listening to " + getSiteID());
     }
     
     
@@ -138,9 +138,9 @@ public abstract class FPFeed implements IFPFeed {
 	        loader.setLoadTemplateIdFromAuxId(true);
             loader.load(new FileInputStream(templateFile));
 	        templateRegistry = loader.getTemplateRegistry();
-    		mylogger.info("Initialized");
+    		mylogger.info("initialized");
         } catch (Exception e) {
-        	mylogger.error("Exiting application. ", e);
+        	mylogger.error("exiting application. ", e);
         	throw new RuntimeException(e);
         } 
     }
@@ -152,8 +152,8 @@ public abstract class FPFeed implements IFPFeed {
 	 * 
 	 * Starts the process
 	 */
-    public final void start() throws FastConnectionException, IOException {
-    	final Connection connection = endpoint.connect();
+    public void start() throws FastConnectionException, IOException {
+    	Connection connection = endpoint.connect();
         Context context = new Context();
         context.setTemplateRegistry(templateRegistry);
         MessageInputStream msgInStream = new MessageInputStream(connection.getInputStream(), context);
@@ -163,18 +163,13 @@ public abstract class FPFeed implements IFPFeed {
             public void run() {
             	SimpleDateFormat dt = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss Z");
             	Date date = new Date();
-            	mylogger.info("Application shutdown "+ dt.format(date));
+            	mylogger.info("application shutdown "+ dt.format(date));
                 endpoint.close();
-                FPFTrace.getInstance().close();
                 LogManager.shutdown();
             }
         });
-		/**
-		 * Initialize trace
-		 */
-		FPFTrace.getInstance().initDecoded(getSiteID());
 
-    	mylogger.info("Wait.Connecting ... ");
+    	mylogger.info("connecting to " + toString());
     	
         while (isProcessing) {
             try {
@@ -183,12 +178,13 @@ public abstract class FPFeed implements IFPFeed {
                 if (message == null) 
                 	break;
                 else
-          		if (!started){
-           			mylogger.info("Connected!");
+          		if (!hasStarted()){
+           			mylogger.info("connected to " + toString());
            			preProcess();
            			started = true;
            		}
-                FPFTrace.getInstance().traceDecoded(message);  
+                if (mylogger.isDebugEnabled())
+                	mylogger.debug(getSiteID() + ": " + message);
                 processMessage(message);
                 msgInStream.reset();
                 stopTime = System.nanoTime();
@@ -201,24 +197,46 @@ public abstract class FPFeed implements IFPFeed {
         postProcess();
     }
     
-
+	/**
+	 * 
+	 * 
+	 * stop the process closing existing 
+	 */
+    public void stop() {
+    	isProcessing = false;
+        endpoint.close();
+    }
+    
+    public void restart() throws FastConnectionException, IOException, InterruptedException {
+    	stop();
+    	isProcessing = true;
+    	Thread.sleep(1000);
+        start();
+    }
+    
+    
     
     protected String getTemplFileName(String sitename) throws FastConnectionException{
     	String templfile =  FPFXmlSettings.readConnectionElement(sitename,FPFXmlSettings.TEMPLATE_FILE);
     	if (templfile==null){
-    		mylogger.error("Template file is missig");
-        	throw new FastConnectionException("Template file is missig");
+    		mylogger.error("template file is missig");
+        	throw new FastConnectionException("template file is missig");
     	}
     	return templfile;
    	}
+    
+    public String toString() {
+    	return getSiteID()+" "+ endpoint.toString();
+    }
 
     public abstract void processMessage(Message message);
     
     public abstract Endpoint getEndpoint();
     
     public abstract String getSiteID();
-    
+  
     public final void stopProcess() { isProcessing = false;}
-        
+    
+    public boolean hasStarted() {return started;}    
 }
 

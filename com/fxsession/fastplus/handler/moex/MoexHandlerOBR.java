@@ -3,7 +3,8 @@
  */
 package com.fxsession.fastplus.handler.moex;
 
-import org.apache.log4j.Logger;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 import com.fxsession.fastplus.fpf.FPFMessage;
 import com.fxsession.fastplus.fpf.FPFOrderBookL2;
@@ -18,31 +19,67 @@ import com.fxsession.fastplus.fpf.OnCommand;
  * OBR
  *
  */
+
 public class MoexHandlerOBR extends FPFOrderBookL2 implements IFPFHandler, IFPField {
-	private static Logger mylogger = Logger.getLogger("OBR");
+	
+	AtomicInteger  rptSeq = new AtomicInteger(-1);
 	@Override
 	public String getInstrumentID() {
 
 		return "EURUSD000TOM";
 	}
-	@Override
+	
+	public boolean checkRepeatMessage(String sRpt) {
+		/*
+		 * THis method cuts off duplicate messages coming from the 2 stream. However it cuts only 95% of duplicates 
+		 */
+		Integer iRep =   Integer.valueOf(sRpt);
+		if (iRep ==rptSeq.intValue())
+			return true;
+		else{
+			rptSeq.set(iRep);
+			return false;
+		}
+	} 
+
+	
 	public OnCommand push(FPFMessage message) {
 		OnCommand retval = OnCommand.ON_PROCESS;
 	    String rptseq = message.getFieldValue(RPTSEQ);
+	    if (checkRepeatMessage(rptseq))
+	    	return retval;
 		String key =  message.getFieldValue(MDENTRYID);
 	    String type = message.getFieldValue(MDENTRYTYPE);
 	    String size = message.getFieldValue(MDENTRYSIZE);
 	    String px = message.getFieldValue(MDENTRYPX);
+	    String timemcs = message.getFieldValue(ORIGINTIME);
+	    String timestamp = message.getFieldValue(MDENTRYTIME);
+	    Long  ltimestamp = Long.parseLong(timestamp);
+		Long  ltimemcs = Long.parseLong(timemcs);
 	    String updAction =message.getFieldValue(MDUPDATEACTION); 
-		if (mylogger.isDebugEnabled())
-			mylogger.info(getInstrumentID()+
-						"<" + FPFMessage.getFieldName(MDENTRYID)+">"+ key +
-						"<" + FPFMessage.getFieldName(MDENTRYTYPE)+">"+ type + 
-						"<" + FPFMessage.getFieldName(MDENTRYSIZE)+">"+ size + 
-						"<" + FPFMessage.getFieldName(MDENTRYPX)+">"+ px + 
-						"<" + FPFMessage.getFieldName(MDUPDATEACTION) + ">" +updAction + 
-						"<" + FPFMessage.getFieldName(RPTSEQ) + ">" +rptseq);
+		switch (updAction){
+			case IFPFOrderBook.ADD 		: 
+				if (type.equals(IFPFOrderBook.BID))  
+					addBid(key,size, px,ltimestamp,ltimemcs); 
+				else
+					addAsk(key,size, px,ltimestamp,ltimemcs);  
+				break;
+			case IFPFOrderBook.CHANGE 	:   
+				if (type.equals(IFPFOrderBook.BID))
+					changeBid(key,size, px, ltimestamp,ltimemcs);
+				else
+					changeAsk(key,size, px, ltimestamp,ltimemcs);
+				break;
+			case IFPFOrderBook.DELETE 	: 
+				if (type.equals(IFPFOrderBook.BID)) 
+					deleteBid(key,null); 
+				else
+					deleteAsk(key,null);
+				break;
+			default :break; 
+		}
 		return retval;
 	}
+	
 
 }

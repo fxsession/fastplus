@@ -2,10 +2,10 @@ package com.fxsession.fastplus.handler.moex;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+
 
 import com.fxsession.fastplus.fpf.FPFMessage;
-import com.fxsession.fastplus.fpf.FPFOrderBookL2;
+import com.fxsession.fastplus.fpf.FPFOrderBookL3;
 import com.fxsession.fastplus.fpf.IFPFHandler;
 import com.fxsession.fastplus.fpf.IFPFOrderBook;
 import com.fxsession.fastplus.fpf.IFPField;
@@ -25,12 +25,11 @@ import com.fxsession.fastplus.fpf.OnCommand;
  * Natural Refresh works best for aggregated orderbook feed and for highly liquid securities. 
  *
  */
-public class MoexHandlerOLR extends FPFOrderBookL2 implements IFPFHandler, IFPField {
-	private static Logger mylogger = Logger.getLogger(MoexHandlerOLR.class);
+public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPField {
 	
 	AtomicInteger  rptSeq = new AtomicInteger(-1);
 	
-	private boolean checkRepeatMessage(String sRpt) {
+	public boolean checkRepeatMessage(String sRpt) {
 		/*
 		 * THis method cuts off duplicate messages coming from the 2 stream. However it cuts only 95% of duplicates 
 		 */
@@ -58,36 +57,32 @@ public class MoexHandlerOLR extends FPFOrderBookL2 implements IFPFHandler, IFPFi
 			    String type = message.getFieldValue(MDENTRYTYPE);
 			    String size = message.getFieldValue(MDENTRYSIZE);
 			    String px = message.getFieldValue(MDENTRYPX);
+			    String timemcs = message.getFieldValue(ORIGINTIME);
+			    String timestamp = message.getFieldValue(MDENTRYTIME);
+			    Long  ltimestamp = Long.parseLong(timestamp);
+				Long  ltimemcs = Long.parseLong(timemcs);
 			    String updAction =message.getFieldValue(MDUPDATEACTION); 
 				switch (updAction){
 				case IFPFOrderBook.ADD 		: 
 					if (type.equals(IFPFOrderBook.BID))  
-						addBid(key,size, px); 
+						addBid(key,size, px,ltimestamp,ltimemcs); 
 				    else
-						addAsk(key,size, px);  
+						addAsk(key,size, px,ltimestamp,ltimemcs);  
 				break;
 				case IFPFOrderBook.CHANGE 	:   
 					if (type.equals(IFPFOrderBook.BID))
-						changeBid(key,size, px);
+						changeBid(key,size, px, ltimestamp,ltimemcs);
 					else
-						changeAsk(key,size, px);
+						changeAsk(key,size, px, ltimestamp,ltimemcs);
 			    break;
 				case IFPFOrderBook.DELETE 	: 
 					if (type.equals(IFPFOrderBook.BID)) 
-					  deleteBid(key); 
+					  deleteBid(null,px); 
 					else
-					  deleteAsk(key);
+					  deleteAsk(null,px);
 				break;
 				default :break; 
 		       }
-				if (mylogger.isDebugEnabled())
-					mylogger.info(getInstrumentID()+
-								"<" + FPFMessage.getFieldName(MDENTRYID)+">"+ key +
-								"<" + FPFMessage.getFieldName(MDENTRYTYPE)+">"+ type + 
-								"<" + FPFMessage.getFieldName(MDENTRYSIZE)+">"+ size + 
-								"<" + FPFMessage.getFieldName(MDENTRYPX)+">"+ px + 
-								"<" + FPFMessage.getFieldName(MDUPDATEACTION) + ">" +updAction + 
-								"<" + FPFMessage.getFieldName(RPTSEQ) + ">" +rptseq);
 		return retval;
 	}
 }

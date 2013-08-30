@@ -46,10 +46,10 @@ public class SSMConnection implements Connection {
     public void close() {
         try {
             datachannel.close();
-            logger.info("Closed connection to group");
+            logger.info("closed connection to group IP" + group.getHostAddress());
         }
         catch (IOException e) {
-            logger.error("Failed to close connection to the group ",e);
+            logger.error("failed to close connection to the group "  + group.getHostAddress(),e);
         }
     }
 

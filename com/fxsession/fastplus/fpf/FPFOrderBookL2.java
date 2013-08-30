@@ -11,6 +11,11 @@ import org.apache.log4j.Logger;
  * @author Dmitry Vulf
  * 
  * L2. Extends L3 behavior. Child classes can inherit either from L2 or L3.  
+ * 
+ * Temporary was switched off 
+ * doesn't work correctly because data is incremental and for the proper counting i need to use 
+ * snapshots (OLS) that I don't really want (too heavy logics). Otherwise sometimes I get negative values while
+ * adding to bidBookL2/askBookL2.  
  *
  */
 public class FPFOrderBookL2 extends FPFOrderBookL3{
@@ -63,8 +68,8 @@ public class FPFOrderBookL2 extends FPFOrderBookL3{
 	
 	private void addBidL2simple (Double px, Integer size) {
 		bidBookL2.put(px,size);
-    	bidloggerL2.info(px + " " + size);		
 		 if (size<0){
+	    	bidloggerL2.info(px + " " + size);
 			System.exit(-1);
 		 }
 			 
@@ -157,8 +162,8 @@ public class FPFOrderBookL2 extends FPFOrderBookL3{
 
 	private void addAskL2simple (Double px, Integer size) {
 		 askBookL2.put(px,size);
-    	 askloggerL2.info(px + " " + size);		 
     	 if (size<0){
+        	 askloggerL2.info(px + " " + size);
 			System.exit(-1);
 		 }
 			 

@@ -55,5 +55,16 @@ public class FPUtility {
 	 String date = dateformat.format(dt) + "."+ mls;
 	 return date;
  }
+ 
+ public static Integer string2Size(String _size) { 
+	 if (_size!=null)   
+		 return Integer.valueOf(_size); 
+	 else return null;}
+ 
+ public static Double string2Px(String _px) {
+	 if (_px !=null)
+		return Double.valueOf(_px);
+	 else return null;
+	 }
 
-}
+ }

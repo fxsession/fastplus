@@ -1,7 +1,10 @@
 package com.fxsession.fastplus.fpf;
 
+import java.io.IOException;
+
 import org.openfast.Message;
 import org.openfast.session.Endpoint;
+import org.openfast.session.FastConnectionException;
 
 public interface IFPFeed {
 	
@@ -42,4 +45,14 @@ public interface IFPFeed {
 	 */
 	public void stopProcess();
 	
+	/*
+	 * Feed started?
+	 */
+	public boolean hasStarted();
+	
+	public void start () throws FastConnectionException, IOException;
+	
+	public void stop();
+	
+	public void restart() throws FastConnectionException, IOException, InterruptedException;
 }

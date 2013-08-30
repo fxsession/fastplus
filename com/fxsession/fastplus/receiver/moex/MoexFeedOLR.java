@@ -59,6 +59,10 @@ public class MoexFeedOLR extends MoexFeed{
 		        fmessage.putFieldValue(RPTSEQ, value);
 				value = secval.getValues()[i].getString(FPFMessage.getFieldName(MDUPDATEACTION));
 				fmessage.putFieldValue(MDUPDATEACTION, value);
+				value = secval.getValues()[i].getString(FPFMessage.getFieldName(ORIGINTIME));
+				fmessage.putFieldValue(ORIGINTIME, value);
+				value = secval.getValues()[i].getString(FPFMessage.getFieldName(MDENTRYTIME));
+				fmessage.putFieldValue(MDENTRYTIME, value);
 				dispatcher.dispatch(this,fmessage);
 			}
 			
