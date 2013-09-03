@@ -53,8 +53,9 @@ public abstract class FPFeed implements IFPFeed {
     private long startTime;
     private long stopTime;
 
-
- 	private Endpoint endpoint = null;
+    //session 
+ 	private final Endpoint endpoint;
+ 	private final Context context =new Context();
  	
  	//Dispatcher
  	protected final FPFeedDispatcher dispatcher;
@@ -121,44 +122,22 @@ public abstract class FPFeed implements IFPFeed {
    		}  
     }
     
-    
-	public FPFeed(FPFeedDispatcher dispatcher) {
-        /**
-        * Initialization part
-        */
-		this.dispatcher = dispatcher;
+    private final void initOpenFastContent(){
+		File templateFile;
 		try {
-			initLogging(null);
-			FPFXmlSettings.getInstance().Init(null);
-		
-			endpoint = getEndpoint();
-
-			File templateFile = new File(getTemplFileName(getSiteID()));
-	        XMLMessageTemplateLoader loader = new XMLMessageTemplateLoader();
-	        loader.setLoadTemplateIdFromAuxId(true);
-            loader.load(new FileInputStream(templateFile));
-	        templateRegistry = loader.getTemplateRegistry();
-    		mylogger.info("initialized");
-        } catch (Exception e) {
-        	mylogger.error("exiting application. ", e);
+			templateFile = new File(getTemplFileName(getSiteID()));
+			XMLMessageTemplateLoader loader = new XMLMessageTemplateLoader();
+			loader.setLoadTemplateIdFromAuxId(true);
+			loader.load(new FileInputStream(templateFile));
+			templateRegistry = loader.getTemplateRegistry();
+			context.setTemplateRegistry(templateRegistry);
+		} catch (Exception e) {
         	throw new RuntimeException(e);
-        } 
+		}
     }
-
-	/**
-	 * 
-	 * @throws FastConnectionException
-	 * @throws IOException
-	 * 
-	 * Starts the process
-	 */
-    public void start() throws FastConnectionException, IOException {
-    	Connection connection = endpoint.connect();
-        Context context = new Context();
-        context.setTemplateRegistry(templateRegistry);
-        MessageInputStream msgInStream = new MessageInputStream(connection.getInputStream(), context);
+    
+    private final void initInternals(){
         setBlockReader();
-        msgInStream.setBlockReader(blockReader);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
             	SimpleDateFormat dt = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss Z");
@@ -168,7 +147,45 @@ public abstract class FPFeed implements IFPFeed {
                 LogManager.shutdown();
             }
         });
+    }
+    
+	public FPFeed(FPFeedDispatcher dispatcher) {
+        /**
+        * Initialization part
+        */
+		this.dispatcher = dispatcher;
+		try {
+			initLogging(null);
+			FPFXmlSettings.getInstance().Init(null);
+			//init openfast content
+			endpoint = getEndpoint();
 
+			initOpenFastContent();
+			
+			initInternals();
+			
+    		mylogger.info("initialized");
+        } catch (Exception e) {
+        	mylogger.error("exiting application. ", e);
+        	throw new RuntimeException(e);
+        } 
+    }
+	
+
+	/**
+	 * 
+	 * @throws FastConnectionException
+	 * @throws IOException
+	 * 
+	 * Starts the process
+	 */
+    public void start() throws FastConnectionException, IOException {
+    	
+    	Connection connection = endpoint.connect();
+        MessageInputStream msgInStream = new MessageInputStream(connection.getInputStream(), context);
+        
+        msgInStream.setBlockReader(blockReader);
+		
     	mylogger.info("connecting to " + toString());
     	
         while (isProcessing) {
@@ -195,6 +212,8 @@ public abstract class FPFeed implements IFPFeed {
             }
         }
         postProcess();
+
+    	msgInStream.close();
     }
     
 	/**
@@ -203,15 +222,13 @@ public abstract class FPFeed implements IFPFeed {
 	 * stop the process closing existing 
 	 */
     public void stop() {
-    	isProcessing = false;
-        endpoint.close();
+    		isProcessing = false;
+    		endpoint.close();
     }
     
     public void restart() throws FastConnectionException, IOException, InterruptedException {
-    	stop();
-    	isProcessing = true;
-    	Thread.sleep(1000);
-        start();
+    		isProcessing = true;
+    		start();
     }
     
     
@@ -237,6 +254,6 @@ public abstract class FPFeed implements IFPFeed {
   
     public final void stopProcess() { isProcessing = false;}
     
-    public boolean hasStarted() {return started;}    
+    public boolean hasStarted() {return started;}
 }
 

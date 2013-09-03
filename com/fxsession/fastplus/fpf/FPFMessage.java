@@ -49,7 +49,8 @@ public class FPFMessage implements IFPField{
 			return messageFields.get(key);
 		}
 		else
-			throw new RuntimeException("Invalid key field"); 
+			throw new RuntimeException("Invalid key field " + key);
+
 	}
 	
 	public String getKeyFieldValue(){

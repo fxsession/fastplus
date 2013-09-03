@@ -9,9 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
-import com.fxsession.fastplus.handler.moex.MoexHandlerOLR;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOBR;
-import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
 
 
 /**
@@ -30,6 +28,7 @@ import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
 public class FPFeedDispatcher {
 	
 	private static Logger mylogger = Logger.getLogger(FPFeedDispatcher.class);
+	private static Logger booklogger = Logger.getLogger("orderbook");
 
 	/**
 	* handlers - the map between instrument received from the feed and its handler
@@ -45,20 +44,19 @@ public class FPFeedDispatcher {
 	private class MessageDispathcer{
 		private IFPFHandler handler;
 		private IFPFeed feed;
+		private boolean stopped; 
 		MessageDispathcer (IFPFHandler phandler, IFPFeed pfeed){
 			handler = phandler;
 			feed = pfeed;
+			stopped = false;
 		}
 		IFPFeed getFeed() {return feed;}
-		IFPFHandler getHandler() {return handler;} 
+		IFPFHandler getHandler() {return handler;}
+		boolean isStopped() {return stopped;}
 	} 
 	
 	private final Map <String, MessageDispathcer> handlers = new HashMap<String,MessageDispathcer>();  
 		
-	private MoexFeedOLR olrFeed;
-	private MoexHandlerOLR olrHandler;
-	private MoexFeedOBR obrFeed;
-	private MoexHandlerOBR obrHandler;
 	
 	private void registerHandler(IFPFHandler handler,IFPFeed feed){
 		if (handler!=null && feed!=null){
@@ -72,12 +70,32 @@ public class FPFeedDispatcher {
 	private boolean monitorFeed(){
 		boolean retVal = true;
      	try {		
-			for (Map.Entry<String, MessageDispathcer> entry : handlers.entrySet())
+			for (final Map.Entry<String, MessageDispathcer> entry : handlers.entrySet())
 			if (!entry.getValue().getFeed().hasStarted()){
 				mylogger.error("no response from  " + entry.getValue().getFeed().toString());
-				//trying to restart
-				entry.getValue().getFeed().restart();   //this shoul be done in a separate thread
+				//stopping feed
+				if (!entry.getValue().isStopped()){
+					entry.getValue().getFeed().stop();
+					entry.getValue().stopped = true;
+				}
+				//restarting it
+				new Thread(new Runnable() {
+						public void run() {
+							try {
+								entry.getValue().stopped = false;
+								entry.getValue().getFeed().restart();
+								mylogger.info("exit thread");
+							} catch (Exception e) {
+		                    mylogger.error( e);
+		                }
+		            }
+				}).start();
+				Thread.sleep(20000);// parameter - millis
 				retVal = false;
+			}
+			else
+			{
+				booklogger.info(entry.getValue().getHandler().toString());
 			}
          } catch (Exception e) {
              mylogger.error( e);
@@ -106,7 +124,8 @@ public class FPFeedDispatcher {
         new Thread(new Runnable() {
             public void run() {
                 try {
-                	entry.getValue().getFeed().start();        	
+                	entry.getValue().getFeed().start();
+                	mylogger.info("exit thread");
                 } catch (Exception e) {
                     mylogger.error( e);
                 }
@@ -132,35 +151,20 @@ public class FPFeedDispatcher {
 	}
 	
     public void run(){
-			olrFeed = new MoexFeedOLR(this);
-			obrFeed = new MoexFeedOBR(this);
-			olrHandler = new MoexHandlerOLR();
-			obrHandler = new MoexHandlerOBR();
-    		//OLR
-			registerHandler(olrHandler,olrFeed);
 			//OBR
-			registerHandler(obrHandler,obrFeed);
+			registerHandler(new MoexHandlerOBR(),new MoexFeedOBR(this));
+			//OLR
+//			registerHandler(new MoexHandlerOLR();,new MoexFeedOLR(this));
 			
-    		/*by now I can only register that feed us down
-    		 *do later reconnection attempt
-    		 */
     		 
     		 startFeeds();
-
-    		new Thread(new Runnable() {
+    		 
+     		new Thread(new Runnable() {
     			public void run() {
     				try {
-    					
     					while (true){
     						Thread.sleep(10000);// parameter - millis
-    						if (monitorFeed()) {
-								obrHandler.scanBid();
-								obrHandler.getBidWeightedBySize(10000);
-   								obrHandler.scanAsk();
-   								obrHandler.getAskWeightedBySize(10000);
-   							}
-//    						if (globalCounter==5)
-//    							System.exit(-1);
+    					    monitorFeed();
     					}
     				} catch (Exception e) {
     					mylogger.error( e);

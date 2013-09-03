@@ -53,6 +53,7 @@ public class SSMEndpoint implements Endpoint{
        	                .setOption(StandardSocketOptions.SO_REUSEADDR, true)
        	                .bind(new InetSocketAddress(port))
        	                .setOption(StandardSocketOptions.IP_MULTICAST_IF, source_interf);
+
             //From now on, all multicast traffic generated in this socket will be output from the interface chosen	                
             dc.join(groupIp,source_interf,InetAddress.getByName(ifaddr));
             //I haven't find any method detecting that join failed

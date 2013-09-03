@@ -17,8 +17,8 @@ import org.apache.log4j.Logger;
  */
 public class FPFOrderBookL2OBR implements IFPFOrderBook{
 
-	private  Logger askloggerL2 = Logger.getLogger("L2ObrAskLooger");
-	private  Logger bidloggerL2 = Logger.getLogger("L2ObrBidLooger");
+	private  Logger askloggerL2 = Logger.getLogger("L2ObrAskLogger");
+	private  Logger bidloggerL2 = Logger.getLogger("L2ObrBidLogger");
 	
 	/*
 	 *  private maps containing sorted by price orders books
@@ -67,16 +67,18 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 		bidBook.remove(entryId);			
 	}
 	
-	@Override
-	public void scanBid() {
+	
+	private String scanBid() {
 		/*
 		 * a template how to visualize bid orderbook
 		 * best bid(maximum) - on the top 
 		 */
+		
+		String retval = "";
    	    for (Map.Entry<Double,Integer> entry : bidBook.entrySet()) {
-	            bidloggerL2.info(entry.getKey() + " " +
-	                               entry.getValue());
+	            retval += entry.getKey() + " " +entry.getValue() + "\r\n";
 	        }		
+   	    return retval;
 	}
 	
 	/*
@@ -141,16 +143,17 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 		askBook.remove(entryId);			
 	}
 
-	@Override
-	public void scanAsk() {
+	
+	public String scanAsk() {
 		/*
 		 * a template how to visualize bid orderbook
 		 * best ask(minimum) - on the bottom
 		 */
+		String retval = ""; 
    	    for (Map.Entry<Double,Integer> entry : askBook.entrySet()) {
-	            askloggerL2.info(entry.getKey() + " " +
-	                               entry.getValue());
-	        }		
+   	    	retval += entry.getKey() + " " +entry.getValue() + "\r\n";
+        }		
+   	    return retval;
 	}
 	
 	/*
@@ -185,5 +188,11 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 		return getAskWeightedBySize(size,0);
 	}
 	
+	@Override
+	public String toString(){
+		String bidbook = "\r\nBID \r\n" + scanBid();
+		String askbook = "\r\nASK \r\n" +  scanAsk();
+		return bidbook + askbook;
+	}
 	
 }

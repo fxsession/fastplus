@@ -19,9 +19,7 @@ public interface IFPFOrderBook {
 	void addBid(String entryId, String size, String px, Long timestamp, Long mcs);
 	void changeBid(String entryId, String size,String px,Long timestamp, Long mcs);
 	void deleteBid(String entryId,String px);
-	void scanBid();
 	void addAsk(String entryId, String size, String px,Long timestamp, Long mcs);
 	void changeAsk(String entryId, String size,String px,Long timestamp, Long mcs);
 	void deleteAsk(String entryId,String px);
-	void scanAsk();
 }

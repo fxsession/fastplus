@@ -82,15 +82,6 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 		}
 	}
 	
-	@Override
-	public void scanBid() {
-   	    for (Map.Entry<String,OrderBookRecord> entry : bidBook.entrySet()) {
-            bidloggerL3.info(entry.getKey() + " " +
-                               entry.getValue().toString());
-        }		
-	}
-
-
 	/*
 	 * ASK PART
 	 * 
@@ -135,16 +126,6 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 			askloggerL3.info(entryId + " " + IFPFOrderBook.DELETE + " " + obr.toString());
 			askBook.remove(entryId);
 		}
-	}
-
-
-	@Override
-	public void scanAsk() {
-   	    for (Map.Entry<String,OrderBookRecord> entry : askBook.entrySet()) {
-            askloggerL3.info(entry.getKey() + " " +
-                               entry.getValue().toString());
-        }		
-
 	}
 
 }

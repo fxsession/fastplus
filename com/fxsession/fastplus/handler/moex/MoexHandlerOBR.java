@@ -7,7 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 import com.fxsession.fastplus.fpf.FPFMessage;
-import com.fxsession.fastplus.fpf.FPFOrderBookL2;
+
+import com.fxsession.fastplus.fpf.FPFOrderBookL2OBR;
 import com.fxsession.fastplus.fpf.IFPFHandler;
 import com.fxsession.fastplus.fpf.IFPFOrderBook;
 import com.fxsession.fastplus.fpf.IFPField;
@@ -20,7 +21,7 @@ import com.fxsession.fastplus.fpf.OnCommand;
  *
  */
 
-public class MoexHandlerOBR extends FPFOrderBookL2 implements IFPFHandler, IFPField {
+public class MoexHandlerOBR extends FPFOrderBookL2OBR implements IFPFHandler, IFPField {
 	
 	AtomicInteger  rptSeq = new AtomicInteger(-1);
 	@Override
@@ -52,23 +53,19 @@ public class MoexHandlerOBR extends FPFOrderBookL2 implements IFPFHandler, IFPFi
 	    String type = message.getFieldValue(MDENTRYTYPE);
 	    String size = message.getFieldValue(MDENTRYSIZE);
 	    String px = message.getFieldValue(MDENTRYPX);
-	    String timemcs = message.getFieldValue(ORIGINTIME);
-	    String timestamp = message.getFieldValue(MDENTRYTIME);
-	    Long  ltimestamp = Long.parseLong(timestamp);
-		Long  ltimemcs = Long.parseLong(timemcs);
 	    String updAction =message.getFieldValue(MDUPDATEACTION); 
 		switch (updAction){
 			case IFPFOrderBook.ADD 		: 
 				if (type.equals(IFPFOrderBook.BID))  
-					addBid(key,size, px,ltimestamp,ltimemcs); 
+					addBid(key,size, px,0l,0l); 
 				else
-					addAsk(key,size, px,ltimestamp,ltimemcs);  
+					addAsk(key,size, px,0l,0l);  
 				break;
 			case IFPFOrderBook.CHANGE 	:   
 				if (type.equals(IFPFOrderBook.BID))
-					changeBid(key,size, px, ltimestamp,ltimemcs);
+					changeBid(key,size, px, 0l,0l);
 				else
-					changeAsk(key,size, px, ltimestamp,ltimemcs);
+					changeAsk(key,size, px, 0l,0l);
 				break;
 			case IFPFOrderBook.DELETE 	: 
 				if (type.equals(IFPFOrderBook.BID)) 
