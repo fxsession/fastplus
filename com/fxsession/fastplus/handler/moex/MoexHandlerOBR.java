@@ -49,34 +49,33 @@ public class MoexHandlerOBR extends FPFOrderBookL2OBR implements IFPFHandler, IF
 	    String rptseq = message.getFieldValue(RPTSEQ);
 	    if (checkRepeatMessage(rptseq))
 	    	return retval;
-		String key =  message.getFieldValue(MDENTRYID);
 	    String type = message.getFieldValue(MDENTRYTYPE);
 	    String size = message.getFieldValue(MDENTRYSIZE);
 	    String px = message.getFieldValue(MDENTRYPX);
-	    String updAction =message.getFieldValue(MDUPDATEACTION); 
+	    String updAction =message.getFieldValue(MDUPDATEACTION);
+
 		switch (updAction){
 			case IFPFOrderBook.ADD 		: 
 				if (type.equals(IFPFOrderBook.BID))  
-					addBid(key,size, px,0l,0l); 
+					addBid(size, px); 
 				else
-					addAsk(key,size, px,0l,0l);  
+					addAsk(size, px);  
 				break;
 			case IFPFOrderBook.CHANGE 	:   
 				if (type.equals(IFPFOrderBook.BID))
-					changeBid(key,size, px, 0l,0l);
+					changeBid(size, px);
 				else
-					changeAsk(key,size, px, 0l,0l);
+					changeAsk(size, px);
 				break;
 			case IFPFOrderBook.DELETE 	: 
 				if (type.equals(IFPFOrderBook.BID)) 
-					deleteBid(key,null); 
+					deleteBid(px,size); 
 				else
-					deleteAsk(key,null);
+					deleteAsk(px,size);
 				break;
 			default :break; 
 		}
 		return retval;
 	}
 	
-
 }

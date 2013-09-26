@@ -61,7 +61,8 @@ public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPFi
 			    String timestamp = message.getFieldValue(MDENTRYTIME);
 			    Long  ltimestamp = Long.parseLong(timestamp);
 				Long  ltimemcs = Long.parseLong(timemcs);
-			    String updAction =message.getFieldValue(MDUPDATEACTION); 
+			    String updAction =message.getFieldValue(MDUPDATEACTION);
+		    
 				switch (updAction){
 				case IFPFOrderBook.ADD 		: 
 					if (type.equals(IFPFOrderBook.BID))  
@@ -83,6 +84,7 @@ public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPFi
 				break;
 				default :break; 
 		       }
+		       
 		return retval;
 	}
 }

@@ -89,7 +89,7 @@ public class FPFXmlSettings {
    		try{
    			File paramFile = new File(localPath);
    			if (!paramFile.exists())
-   				throw new IOException ("Parameters file <fastplus.xml> can't be found in " + localPath);
+   				throw new IOException ("Settings file <fastplus.xml> can't be found in " + localPath);
    			/**
 			*  Final step to initialize DocumentBuilder   
 			*/

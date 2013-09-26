@@ -45,26 +45,27 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 	 */
 	
 	
-	@Override
-	public void addBid(String entryId, String size, String px, Long timestamp, Long timeMcs) {
+	
+	public void addBid(String size, String px) {
 		Integer isize = FPUtility.string2Size(size);
 		Double dpx = FPUtility.string2Px(px);
-	
 		bidBook.put(dpx,isize);  
 		bidloggerL2.info(IFPFOrderBook.ADD + " " + dpx + " " + isize);
 	}
 
-	@Override
-	public void changeBid(String entryId, String size,String px, Long timestamp, Long timeMcs) {
-		addBid(entryId, size, px, timestamp, timeMcs);
+	
+	public void changeBid(String size,String px) {
+		addBid(size, px);
 	}
 
-	@Override
-	public void deleteBid(String entryId,String px) {
-		if (px ==null) 
+	
+	public void deleteBid(String size,String px) {
+		if (px == null)
 			return;
-		bidloggerL2.info(IFPFOrderBook.DELETE + " " + px.toString());
-		bidBook.remove(entryId);			
+		Integer isize = FPUtility.string2Size(size);
+		Double dpx = FPUtility.string2Px(px);
+		bidBook.remove(dpx);
+		bidloggerL2.info(IFPFOrderBook.DELETE + " " + dpx + " " + isize);		
 	}
 	
 	
@@ -78,6 +79,7 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
    	    for (Map.Entry<Double,Integer> entry : bidBook.entrySet()) {
 	            retval += entry.getKey() + " " +entry.getValue() + "\r\n";
 	        }		
+   	    retval +=Double.toString(getBidWeightedBySize(10000000)) + "\r\n";
    	    return retval;
 	}
 	
@@ -121,26 +123,27 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 	 * ASK PART
 	 * 
 	 */
-	@Override
-	public void addAsk(String entryId, String size, String px,Long timestamp, Long timeMcs) {
+	
+	public void addAsk(String size, String px) {
 		Integer isize = FPUtility.string2Size(size);
 		Double dpx = FPUtility.string2Px(px);
-	
 		askBook.put(dpx,isize);  
 		askloggerL2.info(IFPFOrderBook.ADD + " " + dpx + " " + isize);
 	}
 
-	@Override
-	public void changeAsk(String entryId, String size,String px,Long timestamp, Long timeMcs) {
-		addAsk(entryId, size, px, timestamp, timeMcs);
+	
+	public void changeAsk(String size,String px) {
+		addAsk(size, px);
 	}
 
-	@Override
-	public void deleteAsk(String entryId,String px) {
+	
+	public void deleteAsk(String size,String px) {
 		if (px ==null) 
 			return;
-		askloggerL2.info(IFPFOrderBook.DELETE + " " + px.toString());
-		askBook.remove(entryId);			
+		Integer isize = FPUtility.string2Size(size);
+		Double dpx = FPUtility.string2Px(px);
+		askBook.remove(dpx);
+		askloggerL2.info(IFPFOrderBook.DELETE + " " + dpx + " " + isize);		
 	}
 
 	
@@ -153,6 +156,7 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
    	    for (Map.Entry<Double,Integer> entry : askBook.entrySet()) {
    	    	retval += entry.getKey() + " " +entry.getValue() + "\r\n";
         }		
+   	    retval +=Double.toString(getAskWeightedBySize(10000)) + "\r\n";
    	    return retval;
 	}
 	
@@ -164,7 +168,7 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 		Double weighted = 0d;
 		Integer intrsize = size;
 		Integer level = 0;
-		for (Map.Entry<Double,Integer> entry : askBook.entrySet()) {
+		for (Map.Entry<Double,Integer> entry : askBook.descendingMap().entrySet()) {
 			Integer newsize = entry.getValue();
 			if (level>=topLevels2skip){
 				if (newsize < intrsize){  //take full size of the level

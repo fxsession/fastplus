@@ -16,10 +16,4 @@ public interface IFPFOrderBook {
 	static  final String DELETE= "2";
 	static  final String BID= "0";  //quote for buy
 	
-	void addBid(String entryId, String size, String px, Long timestamp, Long mcs);
-	void changeBid(String entryId, String size,String px,Long timestamp, Long mcs);
-	void deleteBid(String entryId,String px);
-	void addAsk(String entryId, String size, String px,Long timestamp, Long mcs);
-	void changeAsk(String entryId, String size,String px,Long timestamp, Long mcs);
-	void deleteAsk(String entryId,String px);
 }

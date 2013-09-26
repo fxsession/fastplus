@@ -40,7 +40,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 	 * 
 	 */
 	
-	@Override
+	
 	public void addBid(String entryId, String size, String px, Long timestamp, Long timeMcs) {
 		if (entryId ==null) 
 			return;
@@ -53,7 +53,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 		bidloggerL3.info(entryId + " " + IFPFOrderBook.ADD + " " + obr.toString());
 	}
 
-	@Override
+	
 	public void changeBid(String entryId, String size,String px, Long timestamp, Long timeMcs) {
 		if (entryId ==null) 
 			return;
@@ -68,7 +68,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 		bidloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obr.toString());
 	}
 
-	@Override
+	
 	public void deleteBid(String entryId,String px) {
 		if (entryId ==null) 
 			return;
@@ -86,7 +86,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 	 * ASK PART
 	 * 
 	 */
-	@Override
+	
 	public void addAsk(String entryId, String size, String px,Long timestamp, Long timeMcs) {
 		if (entryId ==null) 
 			return;
@@ -99,7 +99,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 		askloggerL3.info(entryId + " " + IFPFOrderBook.ADD + " " + obr.toString());
 	}
 
-	@Override
+	
 	public void changeAsk(String entryId, String size,String px,Long timestamp, Long timeMcs) {
 		if (entryId ==null) 
 			return;
@@ -114,7 +114,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 		askloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obr.toString());
 	}
 
-	@Override
+	
 	public void deleteAsk(String entryId, String px) {
 		if (entryId ==null) 
 			return;
@@ -126,6 +126,11 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 			askloggerL3.info(entryId + " " + IFPFOrderBook.DELETE + " " + obr.toString());
 			askBook.remove(entryId);
 		}
+	}
+	
+	@Override
+	public String toString(){
+		return "nothing tp print";
 	}
 
 }

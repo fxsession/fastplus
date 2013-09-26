@@ -9,7 +9,9 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
+import com.fxsession.fastplus.handler.moex.MoexHandlerOLR;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOBR;
+import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
 
 
 /**
@@ -151,16 +153,14 @@ public class FPFeedDispatcher {
 	}
 	
     public void run(){
-			//OBR
-			registerHandler(new MoexHandlerOBR(),new MoexFeedOBR(this));
-			//OLR
-//			registerHandler(new MoexHandlerOLR();,new MoexFeedOLR(this));
-			
+    	//OBR
+		registerHandler(new MoexHandlerOBR(),new MoexFeedOBR(this));
+		//OLR
+		//registerHandler(new MoexHandlerOLR(),new MoexFeedOLR(this));
+		startFeeds();
     		 
-    		 startFeeds();
-    		 
-     		new Thread(new Runnable() {
-    			public void run() {
+   		new Thread(new Runnable() {
+				public void run() {
     				try {
     					while (true){
     						Thread.sleep(10000);// parameter - millis

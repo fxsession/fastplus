@@ -114,7 +114,7 @@ public abstract class FPFeed implements IFPFeed {
    		try{
    			File paramFile = new File(localPath);
    			if (!paramFile.exists())
-					throw new IOException ("Parameters file <log4j.xml> can't be found in " + localPath);
+					throw new IOException ("Settings file <log4j.xml> can't be found in " + localPath);
             DOMConfigurator.configure(localPath);
    		}catch (Exception e){
         	mylogger.error(e);
