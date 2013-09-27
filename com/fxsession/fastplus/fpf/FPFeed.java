@@ -246,7 +246,7 @@ public abstract class FPFeed implements IFPFeed {
     	return getSiteID()+" "+ endpoint.toString();
     }
 
-    public abstract void processMessage(Message message);
+    public abstract void processMessage(Message message) throws FastConnectionException;
     
     public abstract Endpoint getEndpoint();
     

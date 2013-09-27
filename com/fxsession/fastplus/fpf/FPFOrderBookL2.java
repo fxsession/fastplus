@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
  * adding to bidBookL2/askBookL2.  
  *
  */
-public class FPFOrderBookL2 extends FPFOrderBookL3{
+ public abstract class FPFOrderBookL2 extends FPFOrderBookL3{
 	private final int L2_MAX_SIZE = 5;    //order book max size
    	private static Logger askloggerL2 = Logger.getLogger("L2askLooger");
    	private static Logger bidloggerL2 = Logger.getLogger("L2bidLooger");

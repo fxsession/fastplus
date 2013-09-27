@@ -27,4 +27,6 @@ public class MoexHandlerIDF implements IFPFHandler{
 	public boolean checkRepeatMessage(String sRpt) {
 		return false;
 	}
+	
+	
 }

@@ -7,9 +7,12 @@ import java.util.Map;
 
 
 import org.apache.log4j.Logger;
+import org.openfast.session.FastConnectionException;
 
+import com.fxsession.fastplus.handler.moex.MoexHandlerIDF;
 import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
 import com.fxsession.fastplus.handler.moex.MoexHandlerOLR;
+import com.fxsession.fastplus.receiver.moex.MoexFeedIDF;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOBR;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
 
@@ -138,25 +141,33 @@ public class FPFeedDispatcher {
 	
 	
 	public void dispatch(IFPFeed ifeed, //pointer for feed which called this method ie dispatch(this...)
-						FPFMessage message) // the message itself
+						FPFMessage message) throws FastConnectionException  // the message itself
 	{
-		MessageDispathcer dispatcher = handlers.get(composeKey(ifeed,message.getKeyFieldValue()));
-		if (dispatcher!=null){
-			IFPFHandler handle = dispatcher.getHandler();
-			OnCommand command = handle.push(message);
-			switch(command){
-				case ON_STOP_FEED : ifeed.stopProcess();
-			default:
-				break;
+		try {
+			MessageDispathcer dispatcher = handlers.get(composeKey(ifeed,message.getKeyFieldValue()));
+			if (dispatcher!=null){
+				IFPFHandler handle = dispatcher.getHandler();
+				OnCommand command = handle.push(message);
+				switch(command){
+					case ON_STOP_FEED : ifeed.stopProcess();
+				default:
+					break;
+				}
 			}
-		}
+		}catch(Exception e) {
+        	throw new FastConnectionException(e);
+        }
 	}
 	
     public void run(){
     	//OBR
-		registerHandler(new MoexHandlerOBR(),new MoexFeedOBR(this));
+		registerHandler(new MoexHandlerOBR("EURUSD000TOD"),new MoexFeedOBR(this));
+		registerHandler(new MoexHandlerOBR("EURUSD000TOM"),new MoexFeedOBR(this));
 		//OLR
 		//registerHandler(new MoexHandlerOLR(),new MoexFeedOLR(this));
+		//IDF
+		//registerHandler(new MoexHandlerIDF(),new MoexFeedIDF(this));
+		
 		startFeeds();
     		 
    		new Thread(new Runnable() {

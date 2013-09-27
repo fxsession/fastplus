@@ -13,7 +13,7 @@ public interface IFPFeed {
 	 * Process a message came from the stream. Can have different logics - but the normal behavior: parse the message, get key fields and send them to dispatcher
 	 * that's why it can't be implemented in the base abstract class - venue specific.   
 	 */
-	public void processMessage(Message message);
+	public void processMessage(Message message) throws FastConnectionException;
 	
 	/*
 	 * Gets connectivity object.

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.openfast.session.FastConnectionException;
 
 
 /**
@@ -41,7 +42,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 	 */
 	
 	
-	public void addBid(String entryId, String size, String px, Long timestamp, Long timeMcs) {
+	public void addBid(String entryId, String size, String px, Long timestamp, Long timeMcs) throws FastConnectionException {
 		if (entryId ==null) 
 			return;
 		OrderBookRecord obr = new OrderBookRecord(); 
@@ -54,7 +55,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 	}
 
 	
-	public void changeBid(String entryId, String size,String px, Long timestamp, Long timeMcs) {
+	public void changeBid(String entryId, String size,String px, Long timestamp, Long timeMcs) throws FastConnectionException {
 		if (entryId ==null) 
 			return;
 		Integer newSize = FPUtility.string2Size(size);
@@ -87,7 +88,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 	 * 
 	 */
 	
-	public void addAsk(String entryId, String size, String px,Long timestamp, Long timeMcs) {
+	public void addAsk(String entryId, String size, String px,Long timestamp, Long timeMcs) throws FastConnectionException {
 		if (entryId ==null) 
 			return;
 		OrderBookRecord obr = new OrderBookRecord(); 
@@ -100,7 +101,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 	}
 
 	
-	public void changeAsk(String entryId, String size,String px,Long timestamp, Long timeMcs) {
+	public void changeAsk(String entryId, String size,String px,Long timestamp, Long timeMcs) throws FastConnectionException {
 		if (entryId ==null) 
 			return;
 		Integer newSize = FPUtility.string2Size(size);

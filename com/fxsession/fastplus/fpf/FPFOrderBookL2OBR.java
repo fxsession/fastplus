@@ -1,10 +1,15 @@
 package com.fxsession.fastplus.fpf;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
+import org.openfast.session.FastConnectionException;
 
 
 /**
@@ -15,10 +20,34 @@ import org.apache.log4j.Logger;
  *  snapshots (OLS) that I don't really want (too heavy logics) 
  *
  */
-public class FPFOrderBookL2OBR implements IFPFOrderBook{
+public abstract class  FPFOrderBookL2OBR implements IFPFOrderBook{
 
-	private  Logger askloggerL2 = Logger.getLogger("L2ObrAskLogger");
-	private  Logger bidloggerL2 = Logger.getLogger("L2ObrBidLogger");
+	private  Logger loggerL2 = Logger.getLogger("L2");
+	
+	private final String instrumentID;
+	
+    public FPFOrderBookL2OBR (String instrument){
+   		instrumentID = instrument;    
+   	try {
+    		//setting up a FileAppender dynamically...
+    		SimpleLayout layout = new SimpleLayout();    
+    		FileAppender appender;
+    		appender = new FileAppender(layout,getLoggerFileName(),false);
+    		loggerL2.addAppender(appender);
+      		loggerL2.setLevel((Level) Level.DEBUG);
+		} catch (IOException e) {
+			e.printStackTrace();
+			}
+    }
+    
+	public String getInstrumentID() {
+		return instrumentID;
+	}
+
+	public String getLoggerFileName() {
+		return getInstrumentID(); 
+	}
+    
 	
 	/*
 	 *  private maps containing sorted by price orders books
@@ -46,26 +75,26 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 	
 	
 	
-	public void addBid(String size, String px) {
+	public void addBid(String size, String px) throws FastConnectionException {
 		Integer isize = FPUtility.string2Size(size);
 		Double dpx = FPUtility.string2Px(px);
 		bidBook.put(dpx,isize);  
-		bidloggerL2.info(IFPFOrderBook.ADD + " " + dpx + " " + isize);
+		loggerL2.info("bid " + IFPFOrderBook.ADD + " " + dpx + " " + isize);
 	}
 
 	
-	public void changeBid(String size,String px) {
+	public void changeBid(String size,String px) throws FastConnectionException {
 		addBid(size, px);
 	}
 
 	
-	public void deleteBid(String size,String px) {
+	public void deleteBid(String size,String px) throws FastConnectionException {
 		if (px == null)
 			return;
 		Integer isize = FPUtility.string2Size(size);
 		Double dpx = FPUtility.string2Px(px);
 		bidBook.remove(dpx);
-		bidloggerL2.info(IFPFOrderBook.DELETE + " " + dpx + " " + isize);		
+		loggerL2.info("bid " +IFPFOrderBook.DELETE + " " + dpx + " " + isize);		
 	}
 	
 	
@@ -124,26 +153,26 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 	 * 
 	 */
 	
-	public void addAsk(String size, String px) {
+	public void addAsk(String size, String px) throws FastConnectionException {
 		Integer isize = FPUtility.string2Size(size);
 		Double dpx = FPUtility.string2Px(px);
 		askBook.put(dpx,isize);  
-		askloggerL2.info(IFPFOrderBook.ADD + " " + dpx + " " + isize);
+		loggerL2.info("                      ask" + IFPFOrderBook.ADD + " " + dpx + " " + isize);
 	}
 
 	
-	public void changeAsk(String size,String px) {
+	public void changeAsk(String size,String px) throws FastConnectionException {
 		addAsk(size, px);
 	}
 
 	
-	public void deleteAsk(String size,String px) {
+	public void deleteAsk(String size,String px) throws FastConnectionException {
 		if (px ==null) 
 			return;
 		Integer isize = FPUtility.string2Size(size);
 		Double dpx = FPUtility.string2Px(px);
 		askBook.remove(dpx);
-		askloggerL2.info(IFPFOrderBook.DELETE + " " + dpx + " " + isize);		
+		loggerL2.info("                      ask" + IFPFOrderBook.DELETE + " " + dpx + " " + isize);		
 	}
 
 	
@@ -154,9 +183,9 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 		 */
 		String retval = ""; 
    	    for (Map.Entry<Double,Integer> entry : askBook.entrySet()) {
-   	    	retval += entry.getKey() + " " +entry.getValue() + "\r\n";
+   	    	retval +="                       " + entry.getKey() + " " +entry.getValue() + "\r\n";
         }		
-   	    retval +=Double.toString(getAskWeightedBySize(10000)) + "\r\n";
+   	    retval +="                       "+Double.toString(getAskWeightedBySize(10000)) + "\r\n";
    	    return retval;
 	}
 	
@@ -194,9 +223,9 @@ public class FPFOrderBookL2OBR implements IFPFOrderBook{
 	
 	@Override
 	public String toString(){
+	    String header = "\r\n" + getLoggerFileName();
 		String bidbook = "\r\nBID \r\n" + scanBid();
-		String askbook = "\r\nASK \r\n" +  scanAsk();
-		return bidbook + askbook;
+		String askbook = "\r\n                       ASK \r\n" +  scanAsk();
+		return header + bidbook + askbook;
 	}
-	
 }

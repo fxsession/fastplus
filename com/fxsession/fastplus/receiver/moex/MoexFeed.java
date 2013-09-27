@@ -10,6 +10,7 @@ import org.openfast.Message;
 import org.openfast.MessageBlockReader;
 import org.openfast.SequenceValue;
 import org.openfast.session.Endpoint;
+import org.openfast.session.FastConnectionException;
 
 import com.fxsession.fastplus.fpf.FPFMessage;
 import com.fxsession.fastplus.fpf.FPFXmlSettings;
@@ -49,29 +50,18 @@ public abstract class MoexFeed extends FPFeed implements IFPField{
 	}
 
 	/*
-	 * Basic behavior, better to override to fill message
+	 * Basic behavior - send a heartbeat, should overriden to fill message
 	 */
 	
 	@Override
-	public void processMessage(Message message) {
-		if (message.getTemplate().getId().equals(getTemplateID())){
-			String value = message.getString(SYMBOL);
-			if (value == null){
-				SequenceValue secval =message.getSequence (GROUPMDENTRIES);
-				for (int i=0;i < secval.getValues().length;i++){
-					value = secval.getValues()[i].getString(FPFMessage.getFieldName(SYMBOL));
-					if (value!=null){
-						FPFMessage fmessage = new FPFMessage(SYMBOL);
-						fmessage.putFieldValue(SYMBOL, value);
-						dispatcher.dispatch(this,fmessage);
-					}
-				}
-			} else {
-				FPFMessage fmessage = new FPFMessage(SYMBOL);
-				fmessage.putFieldValue(SYMBOL, value);
-				dispatcher.dispatch(this,fmessage);
-			}
-		}	
+	public void processMessage(Message message) throws FastConnectionException {
+		try {
+			FPFMessage fmessage = new FPFMessage(HEARTBEAT);			
+			dispatcher.dispatch(this,fmessage);
+		}catch(Exception e) {
+        	mylogger.error(e);
+        	throw new FastConnectionException(e);
+        }
 	}
 	
 	
@@ -96,14 +86,14 @@ public abstract class MoexFeed extends FPFeed implements IFPField{
 		return "2008";
 	}
 
-	protected void processHeartbeat( Message message){
+	protected void processHeartbeat( Message message) throws FastConnectionException{
 		if (message.getTemplate().getId().equals(getHeartbeatID())){
 			FPFMessage fmessage = new FPFMessage(HEARTBEAT);
 			dispatcher.dispatch(this,fmessage);
 		}
 		else {
 			mylogger.error("Check Template ID");
-		} 
+		}
 	}
-		
+	
 }

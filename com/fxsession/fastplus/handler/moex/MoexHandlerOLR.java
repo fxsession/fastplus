@@ -2,6 +2,9 @@ package com.fxsession.fastplus.handler.moex;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.log4j.Logger;
+import org.openfast.session.FastConnectionException;
+
 
 
 import com.fxsession.fastplus.fpf.FPFMessage;
@@ -11,6 +14,7 @@ import com.fxsession.fastplus.fpf.IFPFOrderBook;
 import com.fxsession.fastplus.fpf.IFPField;
 
 import com.fxsession.fastplus.fpf.OnCommand;
+
 
 /**
  * @author Dmitry Vulf
@@ -26,6 +30,7 @@ import com.fxsession.fastplus.fpf.OnCommand;
  *
  */
 public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPField {
+	private static Logger mylogger = Logger.getLogger(MoexHandlerOLR.class);
 	
 	AtomicInteger  rptSeq = new AtomicInteger(-1);
 	
@@ -48,8 +53,9 @@ public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPFi
 	}
 
 	@Override
-	public OnCommand push(FPFMessage message) {
+	public OnCommand push(FPFMessage message) throws FastConnectionException {
 				OnCommand retval = OnCommand.ON_PROCESS;
+			try{	
 			    String rptseq = message.getFieldValue(RPTSEQ);
 			    if (checkRepeatMessage(rptseq))
 			    	return retval;
@@ -84,7 +90,16 @@ public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPFi
 				break;
 				default :break; 
 		       }
-		       
+			}catch(Exception e) {
+	        	mylogger.error(e);
+	        	throw new FastConnectionException(e);
+	        }
 		return retval;
+	}
+
+	@Override
+	public String getLoggerFileName() {
+		// TODO Auto-generated method stub
+		return getInstrumentID();
 	}
 }

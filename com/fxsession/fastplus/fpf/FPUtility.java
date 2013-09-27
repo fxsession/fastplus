@@ -6,6 +6,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.apache.log4j.Logger;
+import org.openfast.session.FastConnectionException;
+
 
 
 
@@ -16,6 +19,7 @@ import java.util.TimeZone;
  *
  */
 public class FPUtility {
+	private static Logger mylogger = Logger.getLogger(FPUtility.class);
 	
 	static private SimpleDateFormat dateformat= new SimpleDateFormat("HH:mm:ss");   
 	
@@ -56,15 +60,27 @@ public class FPUtility {
 	 return date;
  }
  
- public static Integer string2Size(String _size) { 
-	 if (_size!=null)   
-		 return Integer.valueOf(_size); 
-	 else return null;}
- 
- public static Double string2Px(String _px) {
-	 if (_px !=null)
-		return Double.valueOf(_px);
-	 else return null;
+ public static Integer string2Size(String _size) throws FastConnectionException {
+	 try {
+		 if (_size.equals(null) || _size.trim().isEmpty())
+		 	return 0;   
+		 else 
+		 	return Integer.valueOf(_size.trim());
+	 } catch (Exception e){
+     	mylogger.error(e + " input value:<" + _size + ">");
+     	throw new FastConnectionException(e);
 	 }
-
+ }
+ 
+ public static Double string2Px(String _px) throws FastConnectionException{
+ 	 try {
+	 	if (_px.equals(null) || _px.trim().isEmpty())
+			return 0d;
+	 	else 
+	 		return Double.valueOf(_px);
+ 	}catch (Exception e){
+     	mylogger.error(e + " input value:<" + _px+">");
+   		throw new FastConnectionException(e);
+	}
+  }
  }

@@ -1,6 +1,8 @@
 
 package com.fxsession.fastplus.fpf;
 
+import org.openfast.session.FastConnectionException;
+
 
 
 /**
@@ -14,7 +16,16 @@ package com.fxsession.fastplus.fpf;
  *
  */
 public interface IFPFHandler {
+	/*
+	 * Return instrument ID. which is passed in constructor
+	 */
 	String getInstrumentID();
-	OnCommand push(FPFMessage message);
+	/*
+	 * method that catches a message from dispatcher    
+	 */
+	OnCommand push(FPFMessage message) throws FastConnectionException;
+	/*
+	 * 
+	 */
 	boolean checkRepeatMessage(String sRpt);
 }
