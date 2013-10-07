@@ -12,12 +12,6 @@ import com.fxsession.fastplus.fpf.OnCommand;
 
 public class MoexHandlerOLS implements IFPFHandler,IFPField{
 
-
-	@Override
-	public String getInstrumentID() {
-		return "EURUSD000TOM";
-	}
-
 	@Override
 	public OnCommand push(FPFMessage message) {
 		OnCommand retval = OnCommand.ON_PROCESS;
@@ -28,6 +22,12 @@ public class MoexHandlerOLS implements IFPFHandler,IFPField{
 	public boolean checkRepeatMessage(String sRpt) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public String getInstrumentID() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

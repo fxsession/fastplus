@@ -14,7 +14,5 @@ public interface IFPFOrderBook {
 	static  final String CHANGE= "1";
 	static  final String DELETE= "2";
 	static  final String BID= "0";  //quote for buy
-	
-	String getLoggerFileName();
-	
+
 }

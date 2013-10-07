@@ -1,9 +1,11 @@
 package com.fxsession.fastplus.fpf;
 
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+
 import org.openfast.session.FastConnectionException;
 
 
@@ -19,9 +21,9 @@ import org.openfast.session.FastConnectionException;
 
 public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 
-	private  Logger askloggerL3 = Logger.getLogger("L3askLooger");
-	private  Logger bidloggerL3 = Logger.getLogger("L3bidLooger");
-		
+	private  Logger loggerL3 = Logger.getLogger("L3");
+	
+	protected final String instrumentID;	
 	class OrderBookRecord {
 		 public Integer size = null;
 		 public Double px = null;
@@ -35,7 +37,10 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 	final Map <String,OrderBookRecord> bidBook = new HashMap<String,OrderBookRecord> ();
 	final Map <String,OrderBookRecord> askBook = new HashMap<String,OrderBookRecord> ();
 	
-
+	public FPFOrderBookL3(String instrument) {
+   		instrumentID = instrument;    
+	}
+	
 	/*
 	 * BID PART
 	 * 
@@ -46,27 +51,27 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 		if (entryId ==null) 
 			return;
 		OrderBookRecord obr = new OrderBookRecord(); 
-		obr.size = FPUtility.string2Size(size);
-		obr.px = FPUtility.string2Px(px);
+		obr.size = FPUtility.string2Int(size);
+		obr.px = FPUtility.string2Double(px);
 		obr.timestmp = timestamp;
 		obr.timestmp = timeMcs;
 		bidBook.put(entryId, obr);
-		bidloggerL3.info(entryId + " " + IFPFOrderBook.ADD + " " + obr.toString());
+		loggerL3.info("bid " + entryId + " add "  + obr.toString());
 	}
 
 	
 	public void changeBid(String entryId, String size,String px, Long timestamp, Long timeMcs) throws FastConnectionException {
 		if (entryId ==null) 
 			return;
-		Integer newSize = FPUtility.string2Size(size);
-		Double _px = FPUtility.string2Px(px);
+		Integer newSize = FPUtility.string2Int(size);
+		Double _px = FPUtility.string2Double(px);
 		OrderBookRecord obr = new OrderBookRecord(); 
 		obr.px = _px;
 		obr.size = newSize;
 		obr.timestmp = timestamp;
 		obr.timestmp = timeMcs;
 		bidBook.put(entryId, obr);
-		bidloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obr.toString());
+		loggerL3.info("bid " + entryId + " change "  + obr.toString());
 	}
 
 	
@@ -78,7 +83,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 			/*
 			 * for the same reasons as in change. The previous <add> could be not registered earlier
 			 */
-			bidloggerL3.info(entryId + " " + IFPFOrderBook.DELETE + " " + obr.toString());
+			loggerL3.info("bid " + entryId + " delete " + obr.toString());
 			bidBook.remove(entryId);			
 		}
 	}
@@ -92,27 +97,27 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 		if (entryId ==null) 
 			return;
 		OrderBookRecord obr = new OrderBookRecord(); 
-		obr.size = FPUtility.string2Size(size);
-		obr.px = FPUtility.string2Px(px);
+		obr.size = FPUtility.string2Int(size);
+		obr.px = FPUtility.string2Double(px);
 		obr.timestmp = timestamp;
 		obr.timestmp = timeMcs;
 		askBook.put(entryId, obr);
-		askloggerL3.info(entryId + " " + IFPFOrderBook.ADD + " " + obr.toString());
+		loggerL3.info("                         ask" + entryId + " add "  + obr.toString());
 	}
 
 	
 	public void changeAsk(String entryId, String size,String px,Long timestamp, Long timeMcs) throws FastConnectionException {
 		if (entryId ==null) 
 			return;
-		Integer newSize = FPUtility.string2Size(size);
-		Double _px = FPUtility.string2Px(px);
+		Integer newSize = FPUtility.string2Int(size);
+		Double _px = FPUtility.string2Double(px);
 		OrderBookRecord obr = new OrderBookRecord(); 
 		obr.px = _px;
 		obr.size = newSize;
 		obr.timestmp = timestamp;
 		obr.timestmp = timeMcs;
 		askBook.put(entryId, obr);
-		askloggerL3.info(entryId + " " + IFPFOrderBook.CHANGE + " " + obr.toString());
+		loggerL3.info("                         ask" + entryId + " change " + obr.toString());
 	}
 
 	
@@ -124,7 +129,7 @@ public abstract class FPFOrderBookL3 implements IFPFOrderBook{
 			/*
 			 * for the same reasons as in change. The previous <add> can be not registered earlier
 			 */
-			askloggerL3.info(entryId + " " + IFPFOrderBook.DELETE + " " + obr.toString());
+			loggerL3.info("                         ask" + entryId + " delete " + obr.toString());
 			askBook.remove(entryId);
 		}
 	}

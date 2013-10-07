@@ -1,5 +1,6 @@
 package com.fxsession.fastplus.fpf;
 
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -20,11 +21,8 @@ import org.apache.log4j.Logger;
  */
  public abstract class FPFOrderBookL2 extends FPFOrderBookL3{
 	private final int L2_MAX_SIZE = 5;    //order book max size
-   	private static Logger askloggerL2 = Logger.getLogger("L2askLooger");
-   	private static Logger bidloggerL2 = Logger.getLogger("L2bidLooger");
-   	
-   	
-   	
+	private  Logger loggerL2 = Logger.getLogger("L2");   	
+   	   	
 
 	/*
 	 *  private maps containing sorted by price orders books
@@ -44,7 +42,16 @@ import org.apache.log4j.Logger;
 	
 	private final TreeMap <Double,Integer> askBookL2 = new TreeMap<Double,Integer>();
 
-	public FPFOrderBookL2() {
+	public String getInstrumentID() {
+		return instrumentID;
+	}
+
+	public String getLoggerFileName() {
+		return getInstrumentID(); 
+	}
+
+	public FPFOrderBookL2(String instrument) {
+		super(instrument);
 	}
 	
 	/*
@@ -69,7 +76,7 @@ import org.apache.log4j.Logger;
 	private void addBidL2simple (Double px, Integer size) {
 		bidBookL2.put(px,size);
 		 if (size<0){
-	    	bidloggerL2.info(px + " " + size);
+			loggerL2.info("bid " + px + " " + size);
 			System.exit(-1);
 		 }
 			 
@@ -163,7 +170,7 @@ import org.apache.log4j.Logger;
 	private void addAskL2simple (Double px, Integer size) {
 		 askBookL2.put(px,size);
     	 if (size<0){
-        	 askloggerL2.info(px + " " + size);
+    		 loggerL2.info("ask +" +px + " " + size);
 			System.exit(-1);
 		 }
 			 
@@ -236,30 +243,29 @@ import org.apache.log4j.Logger;
 	public void scanBid(){
 		//scans current status of the bid
    	    for (Map.Entry<Double,Integer> entry : bidBookL2.entrySet()) {
-	            bidloggerL2.info(entry.getKey() + " " +
-	                               entry.getValue());
+   	    	loggerL2.info("bid " + entry.getKey() + " " + entry.getValue());
 	        }		
    	 	}
 	
 	public Double logBidWeighted(){
 		Double thisfigure = getBidWeightedBySize(1);
-		bidloggerL2.info(String.format("%.5f", thisfigure));
+		loggerL2.info("bid " +String.format("%.5f", thisfigure));
 		return thisfigure;
 	}
 
 	public void scanAsk(){
 		//scans current status of the ask
 		for (Map.Entry<Double,Integer> entry : askBookL2.entrySet()) {
-			  askloggerL2.info(entry.getKey() + " " +
-	                               entry.getValue());
+			  loggerL2.info("                      ask " + entry.getKey() + " " + entry.getValue());
 	        }		
 		}
 	
 	public Double logAskWeighted(){
 		Double thisfigure = getAskWeightedBySize(1);
-		askloggerL2.info(String.format("%.5f", thisfigure));
+		loggerL2.info("                      ask " + String.format("%.5f", thisfigure));
 		return thisfigure;
 	}
+
 
 
 }

@@ -1,6 +1,8 @@
 package com.fxsession.fastplus.fpf;
 
 
+
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -60,7 +62,7 @@ public class FPUtility {
 	 return date;
  }
  
- public static Integer string2Size(String _size) throws FastConnectionException {
+ public static Integer string2Int(String _size) throws FastConnectionException {
 	 try {
 		 if (_size.equals(null) || _size.trim().isEmpty())
 		 	return 0;   
@@ -72,7 +74,7 @@ public class FPUtility {
 	 }
  }
  
- public static Double string2Px(String _px) throws FastConnectionException{
+ public static Double string2Double(String _px) throws FastConnectionException{
  	 try {
 	 	if (_px.equals(null) || _px.trim().isEmpty())
 			return 0d;
@@ -83,4 +85,12 @@ public class FPUtility {
    		throw new FastConnectionException(e);
 	}
   }
- }
+ 
+   
+ public static String Double2String (Double _px, int decplaces) {
+ 	DecimalFormat myFormatter = new DecimalFormat("#.0000000");
+ 	myFormatter.setMaximumFractionDigits(decplaces);
+	String output = myFormatter.format(_px);
+	return output;
+ } 
+}

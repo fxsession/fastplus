@@ -8,7 +8,6 @@ import java.io.InputStream;
 import org.apache.log4j.Logger;
 import org.openfast.Message;
 import org.openfast.MessageBlockReader;
-import org.openfast.SequenceValue;
 import org.openfast.session.Endpoint;
 import org.openfast.session.FastConnectionException;
 

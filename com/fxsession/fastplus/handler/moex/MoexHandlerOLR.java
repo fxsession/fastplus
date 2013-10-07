@@ -30,10 +30,17 @@ import com.fxsession.fastplus.fpf.OnCommand;
  *
  */
 public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPField {
+	
+
 	private static Logger mylogger = Logger.getLogger(MoexHandlerOLR.class);
 	
 	AtomicInteger  rptSeq = new AtomicInteger(-1);
-	
+
+	public MoexHandlerOLR(String instrument) {
+		super(instrument);
+
+	}
+
 	public boolean checkRepeatMessage(String sRpt) {
 		/*
 		 * THis method cuts off duplicate messages coming from the 2 stream. However it cuts only 95% of duplicates 
@@ -97,9 +104,4 @@ public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPFi
 		return retval;
 	}
 
-	@Override
-	public String getLoggerFileName() {
-		// TODO Auto-generated method stub
-		return getInstrumentID();
-	}
 }

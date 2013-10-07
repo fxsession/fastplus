@@ -94,20 +94,20 @@ public abstract class FPFeed implements IFPFeed {
     	mylogger.info("stoped listening to " + getSiteID());
     }
     
-    
-
-    /**
-     * I assume that log4j.xml file is stored in the same folder as this jar if not specified directly - parapath = null 
+    /*
+     *Initialization part    
      */
-    private final void initLogging(String parampath) throws FastConnectionException{
+
+    /*
+     * I assume that log4j.xml file is stored in the same folder as this jar 
+     */
+    private final void initLogging() throws FastConnectionException{
   	   	String localPath;
-    	if (parampath==null){
-    		File currentJavaJarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());   
-    		String currentJavaJarFilePath = currentJavaJarFile.getAbsolutePath();
-    		String currentRootDirectoryPath = currentJavaJarFilePath.replace(currentJavaJarFile.getName(), "");
-    		localPath = currentRootDirectoryPath;
-    	} else{
-    		localPath = parampath; 	}
+  	   	//get current jar location
+   		File currentJavaJarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());   
+   		String currentJavaJarFilePath = currentJavaJarFile.getAbsolutePath();
+   		String currentRootDirectoryPath = currentJavaJarFilePath.replace(currentJavaJarFile.getName(), "");
+   		localPath = currentRootDirectoryPath;
     	
     	localPath+= logFileName;
     	
@@ -115,6 +115,7 @@ public abstract class FPFeed implements IFPFeed {
    			File paramFile = new File(localPath);
    			if (!paramFile.exists())
 					throw new IOException ("Settings file <log4j.xml> can't be found in " + localPath);
+   			//found. configure it
             DOMConfigurator.configure(localPath);
    		}catch (Exception e){
         	mylogger.error(e);
@@ -122,9 +123,13 @@ public abstract class FPFeed implements IFPFeed {
    		}  
     }
     
+    /*
+     * Init specific openfast staff
+     */
     private final void initOpenFastContent(){
 		File templateFile;
 		try {
+			//read <templateFileName> parameter
 			templateFile = new File(getTemplFileName(getSiteID()));
 			XMLMessageTemplateLoader loader = new XMLMessageTemplateLoader();
 			loader.setLoadTemplateIdFromAuxId(true);
@@ -136,6 +141,9 @@ public abstract class FPFeed implements IFPFeed {
 		}
     }
     
+    /*
+     * Simply adds gentle exit
+     */
     private final void initInternals(){
         setBlockReader();
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -150,12 +158,10 @@ public abstract class FPFeed implements IFPFeed {
     }
     
 	public FPFeed(FPFeedDispatcher dispatcher) {
-        /**
-        * Initialization part
-        */
+        //Initialization part
 		this.dispatcher = dispatcher;
 		try {
-			initLogging(null);
+			initLogging();
 			FPFXmlSettings.getInstance().Init(null);
 			//init openfast content
 			endpoint = getEndpoint();
@@ -172,7 +178,7 @@ public abstract class FPFeed implements IFPFeed {
     }
 	
 
-	/**
+	/*
 	 * 
 	 * @throws FastConnectionException
 	 * @throws IOException
@@ -200,6 +206,7 @@ public abstract class FPFeed implements IFPFeed {
            			preProcess();
            			started = true;
            		}
+                //message raw out output
                 if (mylogger.isDebugEnabled())
                 	mylogger.debug(getSiteID() + ": " + message);
                 processMessage(message);

@@ -12,6 +12,7 @@ import org.openfast.session.FastConnectionException;
 import com.fxsession.fastplus.handler.moex.MoexHandlerIDF;
 import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
 import com.fxsession.fastplus.handler.moex.MoexHandlerOLR;
+import com.fxsession.fastplus.receiver.moex.MoexFeed;
 import com.fxsession.fastplus.receiver.moex.MoexFeedIDF;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOBR;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
@@ -33,7 +34,7 @@ import com.fxsession.fastplus.receiver.moex.MoexFeedOLR;
 public class FPFeedDispatcher {
 	
 	private static Logger mylogger = Logger.getLogger(FPFeedDispatcher.class);
-	private static Logger booklogger = Logger.getLogger("orderbook");
+	private static Logger L2logger = Logger.getLogger("L2");
 
 	/**
 	* handlers - the map between instrument received from the feed and its handler
@@ -98,10 +99,6 @@ public class FPFeedDispatcher {
 				Thread.sleep(20000);// parameter - millis
 				retVal = false;
 			}
-			else
-			{
-				booklogger.info(entry.getValue().getHandler().toString());
-			}
          } catch (Exception e) {
              mylogger.error( e);
         }
@@ -149,7 +146,8 @@ public class FPFeedDispatcher {
 				IFPFHandler handle = dispatcher.getHandler();
 				OnCommand command = handle.push(message);
 				switch(command){
-					case ON_STOP_FEED : ifeed.stopProcess();
+					case ON_STOP_FEED : ifeed.stopProcess(); break;
+					case ON_PROCESS: L2logger.info(handle.toString()); break; 
 				default:
 					break;
 				}
@@ -159,15 +157,17 @@ public class FPFeedDispatcher {
         }
 	}
 	
+	
     public void run(){
     	//OBR
-		registerHandler(new MoexHandlerOBR("EURUSD000TOD"),new MoexFeedOBR(this));
+		//registerHandler(new MoexHandlerOBR("EURUSD000TOD"),new MoexFeedOBR(this));
 		registerHandler(new MoexHandlerOBR("EURUSD000TOM"),new MoexFeedOBR(this));
 		//OLR
-		//registerHandler(new MoexHandlerOLR(),new MoexFeedOLR(this));
+		//registerHandler(new MoexHandlerOLR("EURUSD000TOM"),new MoexFeedOLR(this));
 		//IDF
 		//registerHandler(new MoexHandlerIDF(),new MoexFeedIDF(this));
-		
+    	//OLS
+    	//registerHandler(new MoexHandlerOLS(),new MoexFeedOLS(this));
 		startFeeds();
     		 
    		new Thread(new Runnable() {

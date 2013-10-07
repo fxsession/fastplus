@@ -1,12 +1,13 @@
-package com.fxsession.moexconsumer;
+package com.fxsession.fastplus;
+
+import com.fxsession.fastplus.fpf.FPFeedDispatcher;
 
 /**
  * @author Dmitry Vulf
+  
+ * Main 
  *
  */
-
-import com.fxsession.fastplus.fpf.*;
-
 public class Main {
     public static void main(String[] args) {
     		FPFeedDispatcher idispach = new FPFeedDispatcher();
