@@ -1,4 +1,4 @@
-package com.fxsession.fastplus.receiver.moex;
+package com.fxsession.fastplus.receiver.moex.depreciated;
 
 import com.fxsession.fastplus.fpf.FPFeedDispatcher;
 

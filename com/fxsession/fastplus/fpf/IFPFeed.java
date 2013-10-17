@@ -19,7 +19,7 @@ public interface IFPFeed {
 	 * Gets connectivity object.
 	 * Constructs connection calling connect() method 
 	 */
-	public Endpoint getEndpoint();
+	public Endpoint getEndpoint() throws FastConnectionException;
 	
 	/*
 	 * Identifies the feed. should coincide with feed settings in the xml file

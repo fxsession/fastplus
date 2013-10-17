@@ -1,4 +1,4 @@
-package com.fxsession.fastplus.handler.moex;
+package com.fxsession.fastplus.handler.moex.depreciated;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -8,12 +8,10 @@ import org.openfast.session.FastConnectionException;
 
 
 import com.fxsession.fastplus.fpf.FPFMessage;
-import com.fxsession.fastplus.fpf.FPFOrderBookL3;
-import com.fxsession.fastplus.fpf.IFPFHandler;
-import com.fxsession.fastplus.fpf.IFPFOrderBook;
-import com.fxsession.fastplus.fpf.IFPField;
 
 import com.fxsession.fastplus.fpf.OnCommand;
+import com.fxsession.fastplus.fpf.depreciated.FPFTransaction;
+import com.fxsession.fastplus.handler.moex.MoexHandler;
 
 
 /**
@@ -29,35 +27,17 @@ import com.fxsession.fastplus.fpf.OnCommand;
  * Natural Refresh works best for aggregated orderbook feed and for highly liquid securities. 
  *
  */
-public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPField {
-	
-
+public class MoexHandlerOLR  extends MoexHandler {
 	private static Logger mylogger = Logger.getLogger(MoexHandlerOLR.class);
+	private final FPFTransaction transaction;
 	
 	AtomicInteger  rptSeq = new AtomicInteger(-1);
 
 	public MoexHandlerOLR(String instrument) {
 		super(instrument);
-
+		transaction = new FPFTransaction();
 	}
 
-	public boolean checkRepeatMessage(String sRpt) {
-		/*
-		 * THis method cuts off duplicate messages coming from the 2 stream. However it cuts only 95% of duplicates 
-		 */
-		Integer iRep =   Integer.valueOf(sRpt);
-		if (iRep ==rptSeq.intValue())
-			return true;
-		else{
-			rptSeq.set(iRep);
-			return false;
-		}
-	} 
-		
-	@Override
-	public String getInstrumentID() {
-		return "EURUSD000TOM";
-	}
 
 	@Override
 	public OnCommand push(FPFMessage message) throws FastConnectionException {
@@ -72,36 +52,27 @@ public class MoexHandlerOLR extends FPFOrderBookL3 implements IFPFHandler, IFPFi
 			    String px = message.getFieldValue(MDENTRYPX);
 			    String timemcs = message.getFieldValue(ORIGINTIME);
 			    String timestamp = message.getFieldValue(MDENTRYTIME);
-			    Long  ltimestamp = Long.parseLong(timestamp);
-				Long  ltimemcs = Long.parseLong(timemcs);
 			    String updAction =message.getFieldValue(MDUPDATEACTION);
-		    
-				switch (updAction){
-				case IFPFOrderBook.ADD 		: 
-					if (type.equals(IFPFOrderBook.BID))  
-						addBid(key,size, px,ltimestamp,ltimemcs); 
-				    else
-						addAsk(key,size, px,ltimestamp,ltimemcs);  
-				break;
-				case IFPFOrderBook.CHANGE 	:   
-					if (type.equals(IFPFOrderBook.BID))
-						changeBid(key,size, px, ltimestamp,ltimemcs);
-					else
-						changeAsk(key,size, px, ltimestamp,ltimemcs);
-			    break;
-				case IFPFOrderBook.DELETE 	: 
-					if (type.equals(IFPFOrderBook.BID)) 
-					  deleteBid(null,px); 
-					else
-					  deleteAsk(null,px);
-				break;
-				default :break; 
-		       }
+			    transaction.disptch (updAction, 
+			    		             type, 
+			    		             key, 
+			    		             size, 
+			    		             px, 
+			    		             timestamp, 
+			    		             timemcs);		    
 			}catch(Exception e) {
 	        	mylogger.error(e);
 	        	throw new FastConnectionException(e);
 	        }
 		return retval;
 	}
+   
+	/*
+	 * Storage part
+	 */
+	
+	
 
+	
+	
 }

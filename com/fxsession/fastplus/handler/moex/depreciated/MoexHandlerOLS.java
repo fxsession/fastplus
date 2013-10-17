@@ -1,32 +1,24 @@
 /**
- * 
+ *  @author Dmitry Vulf
+ *  
+ *  Orders snapshot
  */
-package com.fxsession.fastplus.handler.moex;
+package com.fxsession.fastplus.handler.moex.depreciated;
 
 import org.apache.log4j.Logger;
 import org.openfast.session.FastConnectionException;
 
-
 import com.fxsession.fastplus.fpf.FPFMessage;
-
-
-
 import com.fxsession.fastplus.fpf.FPFOrderBook;
 import com.fxsession.fastplus.fpf.OnCommand;
+import com.fxsession.fastplus.handler.moex.MoexHandler;
+import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
 
-
-/**
- * @author Dmitry Vulf
- * 
- * OBR
- *
- */
-
-public class MoexHandlerOBR extends MoexHandler {
+public class MoexHandlerOLS  extends MoexHandler {
     private static Logger mylogger = Logger.getLogger(MoexHandlerOBR.class);
 	private final FPFOrderBook orderbook; 
 	
-	public MoexHandlerOBR(String instrument) {
+	public MoexHandlerOLS(String instrument) {
 		super(instrument);
 		
 		orderbook = new FPFOrderBook(instrument);
@@ -37,7 +29,6 @@ public class MoexHandlerOBR extends MoexHandler {
 	 * 
 	 */
 	public OnCommand push(FPFMessage message) throws FastConnectionException {
-	
 		OnCommand retval = OnCommand.ON_PROCESS;
 		
 		try{
@@ -51,10 +42,7 @@ public class MoexHandlerOBR extends MoexHandler {
 			String px = message.getFieldValue(MDENTRYPX);
 			String updAction =message.getFieldValue(MDUPDATEACTION);
 			 
-		    orderbook.dispatch(updAction, 
-		    		           type, 
-		    		           size, 
-		    		           px);
+		    orderbook.dispatch(updAction, type, size, px);
 
 		} catch(Exception e) {
         	mylogger.error(e);
@@ -62,4 +50,5 @@ public class MoexHandlerOBR extends MoexHandler {
       }
 	  return retval;
 	}
+
 }

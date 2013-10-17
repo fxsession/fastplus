@@ -1,4 +1,4 @@
-package com.fxsession.fastplus.fpf;
+package com.fxsession.fastplus.fpf.depreciated;
 
 
 import java.util.Collections;
@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  * adding to bidBookL2/askBookL2.  
  *
  */
- public abstract class FPFOrderBookL2 extends FPFOrderBookL3{
+ public abstract class FPFOrderBookL2 {
 	private final int L2_MAX_SIZE = 5;    //order book max size
 	private  Logger loggerL2 = Logger.getLogger("L2");   	
    	   	
@@ -42,16 +42,9 @@ import org.apache.log4j.Logger;
 	
 	private final TreeMap <Double,Integer> askBookL2 = new TreeMap<Double,Integer>();
 
-	public String getInstrumentID() {
-		return instrumentID;
-	}
 
-	public String getLoggerFileName() {
-		return getInstrumentID(); 
-	}
 
 	public FPFOrderBookL2(String instrument) {
-		super(instrument);
 	}
 	
 	/*

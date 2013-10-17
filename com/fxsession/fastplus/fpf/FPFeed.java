@@ -24,8 +24,11 @@ package com.fxsession.fastplus.fpf;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 
 import org.openfast.Context;
@@ -42,6 +45,11 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import org.apache.log4j.xml.DOMConfigurator;
+
+import com.fxsession.utils.FXPException;
+import com.fxsession.utils.FXPXml;
+
+
 
 
 
@@ -102,24 +110,27 @@ public abstract class FPFeed implements IFPFeed {
      * I assume that log4j.xml file is stored in the same folder as this jar 
      */
     private final void initLogging() throws FastConnectionException{
-  	   	String localPath;
-  	   	//get current jar location
-   		File currentJavaJarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());   
-   		String currentJavaJarFilePath = currentJavaJarFile.getAbsolutePath();
-   		String currentRootDirectoryPath = currentJavaJarFilePath.replace(currentJavaJarFile.getName(), "");
-   		localPath = currentRootDirectoryPath;
-    	
-    	localPath+= logFileName;
-    	
+
    		try{
+   			File currentJavaJarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());   
+    		String currentJavaJarFilePath = currentJavaJarFile.getAbsolutePath();
+    		String currentRootDirectoryPath = currentJavaJarFilePath.replace(currentJavaJarFile.getName(), "");
+    		String localPath = currentRootDirectoryPath;
+   			
+   			localPath+= logFileName;
+   			
    			File paramFile = new File(localPath);
    			if (!paramFile.exists())
-					throw new IOException ("Settings file <log4j.xml> can't be found in " + localPath);
+				throw new IOException ("Can't find " + localPath);
+   			else{
    			//found. configure it
-            DOMConfigurator.configure(localPath);
+   			DOMConfigurator.configure(localPath);
+   			if (mylogger.isDebugEnabled())
+   				mylogger.debug("started logging"); 
+   		  }
    		}catch (Exception e){
-        	mylogger.error(e);
-   			throw new FastConnectionException(e);
+            System.out.println(e);
+   			System.exit(-1);
    		}  
     }
     
@@ -162,7 +173,6 @@ public abstract class FPFeed implements IFPFeed {
 		this.dispatcher = dispatcher;
 		try {
 			initLogging();
-			FPFXmlSettings.getInstance().Init(null);
 			//init openfast content
 			endpoint = getEndpoint();
 
@@ -240,8 +250,8 @@ public abstract class FPFeed implements IFPFeed {
     
     
     
-    protected String getTemplFileName(String sitename) throws FastConnectionException{
-    	String templfile =  FPFXmlSettings.readConnectionElement(sitename,FPFXmlSettings.TEMPLATE_FILE);
+    protected String getTemplFileName(String sitename) throws FastConnectionException, ParserConfigurationException, FXPException{
+    	String templfile =  FXPXml.readConnectionElement(sitename,FXPXml.TEMPLATE_FILE);
     	if (templfile==null){
     		mylogger.error("template file is missig");
         	throw new FastConnectionException("template file is missig");
@@ -255,7 +265,7 @@ public abstract class FPFeed implements IFPFeed {
 
     public abstract void processMessage(Message message) throws FastConnectionException;
     
-    public abstract Endpoint getEndpoint();
+    public abstract Endpoint getEndpoint() throws FastConnectionException;
     
     public abstract String getSiteID();
   

@@ -5,6 +5,7 @@ package com.fxsession.fastplus.receiver.moex;
 import java.io.IOException;
 import java.io.InputStream;
 
+
 import org.apache.log4j.Logger;
 import org.openfast.Message;
 import org.openfast.MessageBlockReader;
@@ -12,13 +13,15 @@ import org.openfast.session.Endpoint;
 import org.openfast.session.FastConnectionException;
 
 import com.fxsession.fastplus.fpf.FPFMessage;
-import com.fxsession.fastplus.fpf.FPFXmlSettings;
 import com.fxsession.fastplus.fpf.FPFeed;
 import com.fxsession.fastplus.fpf.FPFeedDispatcher;
 import com.fxsession.fastplus.fpf.IFPField;
 
+import com.fxsession.fastplus.receiver.moex.depreciated.MoexFeedOLR;
 import com.fxsession.fastplus.ssm.SSMConnection;
 import com.fxsession.fastplus.ssm.SSMEndpoint;
+
+import com.fxsession.utils.FXPXml;
 
 /**
  * @author Dmitry Vulf
@@ -38,15 +41,23 @@ public abstract class MoexFeed extends FPFeed implements IFPField{
 
 	/**
 	 * On this point SSM is applied for all inheritors of MoexFeed
+	 * @throws FastConnectionException 
 	 */
-	public Endpoint getEndpoint() {
+	public Endpoint getEndpoint() throws FastConnectionException {
       String sitename = getSiteID();
-
-      String port   = FPFXmlSettings.readConnectionElement(sitename,SSMConnection.PORT_N);
-      String group  = FPFXmlSettings.readConnectionElement(sitename,SSMConnection.GROUP_IP);
-      String ifaddr = FPFXmlSettings.readConnectionElement(sitename,SSMConnection.INTERFACE_IP);
-      return new SSMEndpoint(Integer.parseInt(port),group,ifaddr);
-	}
+	  Endpoint epoint =null; 	
+      String port;
+	try {
+		port = FXPXml.readConnectionElement(sitename,SSMConnection.PORT_N);
+        String group  = FXPXml.readConnectionElement(sitename,SSMConnection.GROUP_IP);
+        String ifaddr = FXPXml.readConnectionElement(sitename,SSMConnection.INTERFACE_IP);
+        epoint = new SSMEndpoint(Integer.parseInt(port),group,ifaddr);
+	}catch (Exception e) {
+    	mylogger.error(e);
+    	throw new FastConnectionException(e);
+ 	}
+ 	return epoint;
+   }
 
 	/*
 	 * Basic behavior - send a heartbeat, should overriden to fill message

@@ -28,6 +28,7 @@ public class FPFMessage implements IFPField{
 		templateFields.put(RPTSEQ, "RptSeq");
 		templateFields.put(ORIGINTIME, "OrigTime");
 		templateFields.put(MDENTRYTIME, "MDEntryTime");
+		templateFields.put(LASTMSGSEQNUMPROCESSED,"LastMsgSeqNumProcessed");
 	}
 		
 	private Map <Integer,String> messageFields = new HashMap<Integer, String>();
