@@ -32,6 +32,19 @@ public class FPFOrderBook implements IFPFTransaction{
 	
 	private final TreeMap <Double,Integer> askBook = new TreeMap<Double,Integer>(Collections.reverseOrder());
 	
+	/**
+	 * Makes bid orderbook clone
+	 * @param object
+	 */
+	public void cloneBid(TreeMap <Double,Integer> object){
+		if (object == null)
+			throw new NullPointerException();
+		else
+			bidBook.putAll(object);
+	}
+
+	
+
 	public FPFOrderBook(String _instrument){
 		instrumentId = _instrument;
 	}
@@ -82,7 +95,8 @@ public class FPFOrderBook implements IFPFTransaction{
 		Integer isize = FXPUtils.string2Int(size);
 		Double dpx = FXPUtils.string2Double(px);
 		bidBook.put(dpx,isize);  
-		mylogger.info(instrumentId + " bid   a  " + FXPUtils.Double2String(dpx,5) + " " + isize);
+		if (mylogger.isDebugEnabled())
+			mylogger.debug(instrumentId + " bid   a  " + FXPUtils.Double2String(dpx,5) + " " + isize);
 	}
 
 	
@@ -97,7 +111,8 @@ public class FPFOrderBook implements IFPFTransaction{
 		Integer isize = FXPUtils.string2Int(size);
 		Double dpx = FXPUtils.string2Double(px);
 		bidBook.remove(dpx);
-		mylogger.info(instrumentId + " bid   d  " + FXPUtils.Double2String(dpx,5) + " " + isize);		
+		if (mylogger.isDebugEnabled())
+			mylogger.debug(instrumentId + " bid   d  " + FXPUtils.Double2String(dpx,5) + " " + isize);		
 	}
 	
 	
@@ -111,7 +126,7 @@ public class FPFOrderBook implements IFPFTransaction{
    	    for (Map.Entry<Double,Integer> entry : bidBook.entrySet()) {
 	            retval += FXPUtils.Double2String(entry.getKey(),5) + " " +entry.getValue() + "\r\n";
 	        }		
-   	    //retval +=Double.toString(getBidWeightedBySize(10000000)) + "\r\n";
+   	    
    	    return retval;
 	}
 	
@@ -145,7 +160,9 @@ public class FPFOrderBook implements IFPFTransaction{
 		Integer remainder = size-intrsize;
 		return ((remainder ==0) ? 0 : weighted/remainder);
 	}
-
+	/*
+	 * Calculate the full book
+	 */
 	public Double getBidWeightedBySize(Integer size){
 		return getBidWeightedBySize(size,0);
 	}
@@ -156,11 +173,24 @@ public class FPFOrderBook implements IFPFTransaction{
 	 * 
 	 */
 	
+	/**
+	 * Makes ask orderbook clone
+	 * @param object
+	 */
+	public void cloneAsk(TreeMap <Double,Integer> object){
+		if (object == null)
+			throw new NullPointerException();
+		else
+			askBook.putAll(object);
+	}
+
+	
 	public void addAsk(String size, String px) throws FXPException {
 		Integer isize = FXPUtils.string2Int(size);
 		Double dpx = FXPUtils.string2Double(px);
-		askBook.put(dpx,isize);  
-		mylogger.info(instrumentId + " ask   a                      "+ FXPUtils.Double2String(dpx,5) + " " + isize);
+		askBook.put(dpx,isize);
+		if (mylogger.isDebugEnabled())
+			mylogger.debug(instrumentId + " ask   a                      "+ FXPUtils.Double2String(dpx,5) + " " + isize);
 	}
 
 	
@@ -175,7 +205,8 @@ public class FPFOrderBook implements IFPFTransaction{
 		Integer isize = FXPUtils.string2Int(size);
 		Double dpx = FXPUtils.string2Double(px);
 		askBook.remove(dpx);
-		mylogger.info(instrumentId + " ask   d                      " + FXPUtils.Double2String(dpx,5) + " " + isize);		
+		if (mylogger.isDebugEnabled())
+			mylogger.debug(instrumentId + " ask   d                      " + FXPUtils.Double2String(dpx,5) + " " + isize);		
 	}
 
 	
@@ -188,7 +219,6 @@ public class FPFOrderBook implements IFPFTransaction{
    	    for (Map.Entry<Double,Integer> entry : askBook.entrySet()) {
    	    	retval +="                       " + FXPUtils.Double2String(entry.getKey(),5) + " " +entry.getValue() + "\r\n";
         }		
-   	    //retval +="                       "+Double.toString(getAskWeightedBySize(10000)) + "\r\n";
    	    return retval;
 	}
 	

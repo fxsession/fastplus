@@ -3,6 +3,8 @@
  */
 package com.fxsession.fastplus.handler.moex;
 
+import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 import org.openfast.session.FastConnectionException;
 
@@ -62,4 +64,25 @@ public class MoexHandlerOBR extends MoexHandler {
       }
 	  return retval;
 	}
+	
+   /**
+   * Clones bidbook to object 
+   * @param object  
+   * object should be null
+   */
+	public void cloneBidbook(TreeMap <Double,Integer> object){
+		orderbook.cloneBid(object);
+	}
+	
+	/**
+	 * Clones askbook to object 
+	 * @param object  
+	 * object should be null
+	 */
+	
+	public void cloneAskbook(TreeMap <Double,Integer> object){
+		orderbook.cloneAsk(object);
+	}
+
+	
 }

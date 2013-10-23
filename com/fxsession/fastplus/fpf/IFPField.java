@@ -20,8 +20,7 @@ public interface IFPField {
 	static public final int MDENTRYTYPE            = 1006;
 	static public final int MDUPDATEACTION         = 1007;
 	static public final int RPTSEQ 	               = 1008;
-        static public final int ORIGINTIME             = 1009;
-        static public final int MDENTRYTIME            = 1100; 
-        static public final int LASTMSGSEQNUMPROCESSED = 1101;
-
+    static public final int ORIGINTIME             = 1009;
+    static public final int MDENTRYTIME            = 1100; 
+    static public final int LASTMSGSEQNUMPROCESSED = 1101;
 }

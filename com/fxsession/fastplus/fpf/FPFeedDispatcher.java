@@ -1,6 +1,7 @@
 package com.fxsession.fastplus.fpf;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import java.util.Map;
@@ -13,10 +14,14 @@ import org.openfast.session.FastConnectionException;
 
 import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
 import com.fxsession.fastplus.handler.moex.depreciated.MoexHandlerOLR;
+import com.fxsession.fastplus.listeners.IListener;
+import com.fxsession.fastplus.listeners.ISystemListener;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOBR;
 import com.fxsession.fastplus.receiver.moex.depreciated.MoexFeedOLR;
 import com.fxsession.utils.FXPException;
 import com.fxsession.utils.FXPXml;
+
+
 
 
 /**
@@ -33,7 +38,7 @@ import com.fxsession.utils.FXPXml;
  */
 
 @SuppressWarnings("unused")
-public class FPFeedDispatcher {
+public class FPFeedDispatcher implements Runnable{
 	
 	private static Logger mylogger = Logger.getLogger(FPFeedDispatcher.class);
 	
@@ -60,10 +65,17 @@ public class FPFeedDispatcher {
 		IFPFeed getFeed() {return feed;}
 		IFPFHandler getHandler() {return handler;}
 		boolean isStopped() {return stopped;}
-	} 
-	
-	private final Map <String, MessageDispathcer> handlers = new HashMap<String,MessageDispathcer>();  
-		
+	} //MessageDispathcer
+
+     
+    FPFListenDispatcher listendispatch = null;
+    
+	public void addListener(IListener ilistener) throws FXPException{
+	  listendispatch.addListener(ilistener);
+	}
+    
+      	
+	private final Map <String, MessageDispathcer> handlers = new HashMap<String,MessageDispathcer>();
 	
 	private void registerHandler(IFPFHandler handler,IFPFeed feed){
 		if (handler!=null && feed!=null){
@@ -74,6 +86,11 @@ public class FPFeedDispatcher {
 			throw new NullPointerException();
 	}
 	
+	/*
+	 * Run through the list of feeds
+	 * Check the feed status
+	 * If it's down - try to restart
+	 */
 	private boolean monitorFeed(){
 		boolean retVal = true;
      	try {		
@@ -85,7 +102,7 @@ public class FPFeedDispatcher {
 					entry.getValue().getFeed().stop();
 					entry.getValue().stopped = true;
 				}
-				//restarting it
+				//restarting it in a new thread
 				new Thread(new Runnable() {
 						public void run() {
 							try {
@@ -97,7 +114,7 @@ public class FPFeedDispatcher {
 		                }
 		            }
 				}).start();
-				Thread.sleep(20000);// parameter - millis
+				Thread.sleep(20000);// 20 sec
 				retVal = false;
 			}
          } catch (Exception e) {
@@ -106,9 +123,24 @@ public class FPFeedDispatcher {
 		return retVal;
 	}
 	
+	//Monitor feed status in a separate thread
+	private void runMonitor() {
+		 new Thread(new Runnable() {
+			 	public void run() {
+			         try {
+			              while (true){
+			               Thread.sleep(10000);// 10 sec
+			   		       monitorFeed();
+    				      }
+			        } catch (Exception e) {
+			 	    mylogger.error( e);
+			 }
+			}
+	 	}).start();
+    }
+	
 	
 	private String composeKey (IFPFeed ifeed, String key){
-		
 		String feedKey = ifeed.getSiteID();
 		
 		if (feedKey == null) {
@@ -120,9 +152,12 @@ public class FPFeedDispatcher {
 		return feedKey+key; 
 	}
 	
-	
+	/**
+	 * Starts all registered feeds
+	 * each feed starts sending messages in a separate thread
+	 */
 	private void startFeeds(){
-	//each feeds start sending messages in a separate thread
+	
 	 	for (final Map.Entry<String, MessageDispathcer> entry : handlers.entrySet()) 
         new Thread(new Runnable() {
             public void run() {
@@ -136,6 +171,7 @@ public class FPFeedDispatcher {
         }).start();
 	}
 
+	
 	/**
 	* Goes through the list of instrument codes in setting file 
 	* and registers it one-by-one in the cycle 
@@ -153,23 +189,33 @@ public class FPFeedDispatcher {
 
 	}
 	
+	
+	
+	/**
+	 * Dispatches events from feeds
+	 * Sends notifications to the relevant handlers
+	 * Sends notifications to the listeners 
+	 * @param ifeed
+	 * @param message
+	 * @throws FastConnectionException
+	 */
 	public void dispatch(IFPFeed ifeed, //pointer for feed which called this method ie dispatch(this...)
-						FPFMessage message) throws FastConnectionException  // the message itself
+						FPFMessage message) throws FXPException  // the message itself
 	{
 		try {
+			//dispatch message from feed
 			MessageDispathcer dispatcher = handlers.get(composeKey(ifeed,message.getKeyFieldValue()));
 			if (dispatcher!=null){
 				IFPFHandler handle = dispatcher.getHandler();
 				OnCommand command = handle.push(message);
 				switch(command){
 					case ON_STOP_FEED : ifeed.stopProcess(); break;
-
 				default:
 					break;
 				}
-			}
+		   }
 		}catch(Exception e) {
-        	throw new FastConnectionException(e);
+        	throw new FXPException(e);
         }
 	}
 	
@@ -180,20 +226,8 @@ public class FPFeedDispatcher {
 		   registerInstruments();
 		    //start feeds
 		   startFeeds();
-    		 
-   		   new Thread(new Runnable() {
-				public void run() {
-    				try {
-    					while (true){
-    						Thread.sleep(10000);// parameter - millis
-    					    monitorFeed();
-    					}
-    				} catch (Exception e) {
-    					mylogger.error( e);
-    				}
-    			}
-    		}).start();
-   		   
+		   //start monitoring feeds
+		   runMonitor();
 		} catch (Exception e1) {
 		  System.out.println(e1);
 		  System.exit(-1);
