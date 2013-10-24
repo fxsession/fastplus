@@ -6,6 +6,9 @@ package com.fxsession.fastplus.fpf;
  *
  */
 public enum OnCommand {
+   ON_NULL,
    ON_PROCESS,
-   ON_STOP_FEED;
+   ON_STOP_FEED,
+   ON_CHANGED_ASK,
+   ON_CHANGED_BID;;
 }

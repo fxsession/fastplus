@@ -1,5 +1,8 @@
 package com.fxsession.fastplus.listeners;
 
+import com.fxsession.fastplus.fpf.IFPFHandler;
+
+
 /**
  * @author Dmitry Vulf
  * 
@@ -7,15 +10,14 @@ package com.fxsession.fastplus.listeners;
  *
  */
 public interface IOrderbookListener extends IListener {
+	
 	/*
-	 * Receives orederbook change event
+	 * Sends event that the orderbook has changed
 	 */
-	public void OnChangeBid();
-	
-	public void OnChangeAsk();
-	
+	public void OnChangeBid(IFPFHandler handle);
+	public void OnChangeAsk(IFPFHandler handle);
 	/*
 	 * Receives feedback for weighted price
 	 */
-	public void OnWeightedPriceChange();
+	public void OnVWAP();
 }

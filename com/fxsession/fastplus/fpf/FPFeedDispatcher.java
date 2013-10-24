@@ -15,6 +15,7 @@ import org.openfast.session.FastConnectionException;
 import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
 import com.fxsession.fastplus.handler.moex.depreciated.MoexHandlerOLR;
 import com.fxsession.fastplus.listeners.IListener;
+import com.fxsession.fastplus.listeners.IOrderbookListener;
 import com.fxsession.fastplus.listeners.ISystemListener;
 import com.fxsession.fastplus.receiver.moex.MoexFeedOBR;
 import com.fxsession.fastplus.receiver.moex.depreciated.MoexFeedOLR;
@@ -38,7 +39,7 @@ import com.fxsession.utils.FXPXml;
  */
 
 @SuppressWarnings("unused")
-public class FPFeedDispatcher implements Runnable{
+public class FPFeedDispatcher{
 	
 	private static Logger mylogger = Logger.getLogger(FPFeedDispatcher.class);
 	
@@ -68,10 +69,20 @@ public class FPFeedDispatcher implements Runnable{
 	} //MessageDispathcer
 
      
-    FPFListenDispatcher listendispatch = null;
+	IListener listener = null;
     
+	/**
+	 * 
+	 * @param ilistener
+	 * @throws FXPException
+	 * 
+	 * Can't add more than one listener
+	 */
 	public void addListener(IListener ilistener) throws FXPException{
-	  listendispatch.addListener(ilistener);
+	    if (this.listener !=null)
+	        throw new FXPException("Listener already exists");
+	        
+		this.listener = ilistener;
 	}
     
       	
@@ -209,7 +220,16 @@ public class FPFeedDispatcher implements Runnable{
 				IFPFHandler handle = dispatcher.getHandler();
 				OnCommand command = handle.push(message);
 				switch(command){
-					case ON_STOP_FEED : ifeed.stopProcess(); break;
+					case ON_STOP_FEED :            
+						ifeed.stopProcess(); break;
+					case ON_CHANGED_ASK : 
+						if (listener instanceof IOrderbookListener)
+    	    			   ((IOrderbookListener)listener).OnChangeAsk(handle);
+                        break;
+					case ON_CHANGED_BID :
+					    if (listener instanceof IOrderbookListener)
+    	    			   ((IOrderbookListener)listener).OnChangeBid(handle);
+                        break;
 				default:
 					break;
 				}

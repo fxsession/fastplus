@@ -15,6 +15,7 @@ import com.fxsession.fastplus.fpf.FPFMessage;
 
 import com.fxsession.fastplus.fpf.FPFOrderBook;
 import com.fxsession.fastplus.fpf.OnCommand;
+import com.fxsession.utils.FXPException;
 
 
 /**
@@ -38,7 +39,7 @@ public class MoexHandlerOBR extends MoexHandler {
 	 * Dispatcher
 	 * 
 	 */
-	public OnCommand push(FPFMessage message) throws FastConnectionException {
+	public OnCommand push(FPFMessage message) throws FXPException {
 	
 		OnCommand retval = OnCommand.ON_PROCESS;
 		
@@ -53,36 +54,33 @@ public class MoexHandlerOBR extends MoexHandler {
 			String px = message.getFieldValue(MDENTRYPX);
 			String updAction =message.getFieldValue(MDUPDATEACTION);
 			 
-		    orderbook.dispatch(updAction, 
+		    retval = orderbook.dispatch(updAction, 
 		    		           type, 
 		    		           size, 
 		    		           px);
-
+		    
 		} catch(Exception e) {
         	mylogger.error(e);
-        	throw new FastConnectionException(e);
+        	throw new FXPException(e);
       }
 	  return retval;
 	}
 	
-   /**
-   * Clones bidbook to object 
-   * @param object  
-   * object should be null
-   */
-	public void cloneBidbook(TreeMap <Double,Integer> object){
-		orderbook.cloneBid(object);
-	}
 	
 	/**
-	 * Clones askbook to object 
-	 * @param object  
-	 * object should be null
+	 * Get vwap 
 	 */
-	
-	public void cloneAskbook(TreeMap <Double,Integer> object){
-		orderbook.cloneAsk(object);
+	public Double getVWAPBid(Integer size) {
+		return null;
+		
+		гдеяэ
 	}
+	
+	public Double getVWAPAsk(Integer size) {
+		return null;
+	}
+
+	
 
 	
 }

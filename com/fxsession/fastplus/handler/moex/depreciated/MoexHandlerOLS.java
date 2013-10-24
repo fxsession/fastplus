@@ -13,6 +13,7 @@ import com.fxsession.fastplus.fpf.FPFOrderBook;
 import com.fxsession.fastplus.fpf.OnCommand;
 import com.fxsession.fastplus.handler.moex.MoexHandler;
 import com.fxsession.fastplus.handler.moex.MoexHandlerOBR;
+import com.fxsession.utils.FXPException;
 
 public class MoexHandlerOLS  extends MoexHandler {
     private static Logger mylogger = Logger.getLogger(MoexHandlerOBR.class);
@@ -28,7 +29,7 @@ public class MoexHandlerOLS  extends MoexHandler {
 	 * Dispatcher
 	 * 
 	 */
-	public OnCommand push(FPFMessage message) throws FastConnectionException {
+	public OnCommand push(FPFMessage message) throws FXPException {
 		OnCommand retval = OnCommand.ON_PROCESS;
 		
 		try{
@@ -46,7 +47,7 @@ public class MoexHandlerOLS  extends MoexHandler {
 
 		} catch(Exception e) {
         	mylogger.error(e);
-        	throw new FastConnectionException(e);
+        	throw new FXPException(e);
       }
 	  return retval;
 	}

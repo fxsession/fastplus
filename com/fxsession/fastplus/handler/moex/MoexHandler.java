@@ -33,8 +33,8 @@ public abstract class MoexHandler  implements IFPFHandler, IFPField {
 	}
 
 	
-	@Override
-	public boolean checkRepeatMessage(String sRpt) {
+	
+	protected boolean checkRepeatMessage(String sRpt) {
 		/*
 		 * THis method cuts off duplicate messages coming from the 2 stream. However it cuts only 95% of duplicates 
 		 */
@@ -46,5 +46,18 @@ public abstract class MoexHandler  implements IFPFHandler, IFPField {
 			return false;
 		}
 	} 
+	
+	@Override
+	public Double getVWAPBid(Integer size) {
+		// TODO Auto-generated method stub
+		return 0d;
+	}
+
+	@Override
+	public Double getVWAPAsk(Integer size) {
+		// TODO Auto-generated method stub
+		return 0d;
+	}
+	
 
 }

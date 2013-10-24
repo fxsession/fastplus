@@ -3,30 +3,25 @@ package com.fxsession.fastplus.handler.moex;
 
 
 import com.fxsession.fastplus.fpf.FPFMessage;
-import com.fxsession.fastplus.fpf.IFPFHandler;
 import com.fxsession.fastplus.fpf.OnCommand;
+import com.fxsession.utils.FXPException;
 
 
-public class MoexHandlerIDF implements IFPFHandler{
+public class MoexHandlerIDF extends MoexHandler{
 	
-	
-
-
-	@Override
-	public String getInstrumentID() {
-		return "EURUSD000TOM";
+	public MoexHandlerIDF(String instrument) {
+		super(instrument);
+		// TODO Auto-generated constructor stub
 	}
 
-	@Override
-	public OnCommand push(FPFMessage message) {
+	public OnCommand push(FPFMessage message) throws FXPException{
 		OnCommand retval = OnCommand.ON_PROCESS;
 		return retval;
 	}
 
-	@Override
 	public boolean checkRepeatMessage(String sRpt) {
 		return false;
 	}
-	
+
 	
 }

@@ -16,9 +16,10 @@ import com.fxsession.utils.FXPException;
 public class FPFListenDispatcher{
 	
 	static  final int ON_HEARTBEAT              = 1;
-	static  final int ON_CHANGEBID              = 2;
-	static  final int ON_CHANGEASK              = 3;
-	static  final int ON_DISCONNECT             = 4;
+	static  final int ON_DISCONNECT             = 2;
+	static  final int ON_CHANGEBID              = 3;
+	static  final int ON_CHANGEASK              = 4;
+	static  final int ON_VWAP                   = 5;
 
 	
 	IListener listener = null;
@@ -61,16 +62,13 @@ public class FPFListenDispatcher{
 		            	    			((ISystemListener)listener).OnDisconnect();
 		            	    		}
 		            	    		break;
+		            	    	case ON_VWAP:
 		            	    	case ON_CHANGEBID:
-		            	    	 	if (listener instanceof IOrderbookListener){
-		            	    	 	    ((IOrderbookListener)listener).OnChangeBid();
-		            	    		}
-		            	    		break;
 		            	    	case ON_CHANGEASK:
 		            	    	 	if (listener instanceof IOrderbookListener){
-		            	    	 	    ((IOrderbookListener)listener).OnChangeAsk();
+		            	    	 	    ((IOrderbookListener)listener).OnVWAP();
 		            	    		}
-		            	    		break;		            	    		
+		            	    		break;
 		            	    				            	    		
 		            	    	}
              	    		  eventQueue.remove(i);	

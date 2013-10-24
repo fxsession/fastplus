@@ -21,6 +21,7 @@ import com.fxsession.fastplus.receiver.moex.depreciated.MoexFeedOLR;
 import com.fxsession.fastplus.ssm.SSMConnection;
 import com.fxsession.fastplus.ssm.SSMEndpoint;
 
+import com.fxsession.utils.FXPException;
 import com.fxsession.utils.FXPXml;
 
 /**
@@ -96,7 +97,7 @@ public abstract class MoexFeed extends FPFeed implements IFPField{
 		return "2008";
 	}
 
-	protected void processHeartbeat( Message message) throws FastConnectionException{
+	protected void processHeartbeat( Message message) throws FXPException{
 		if (message.getTemplate().getId().equals(getHeartbeatID())){
 			FPFMessage fmessage = new FPFMessage(HEARTBEAT);
 			dispatcher.dispatch(this,fmessage);

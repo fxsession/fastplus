@@ -1,7 +1,8 @@
 
 package com.fxsession.fastplus.fpf;
 
-import org.openfast.session.FastConnectionException;
+
+import com.fxsession.utils.FXPException;
 
 
 
@@ -11,8 +12,6 @@ import org.openfast.session.FastConnectionException;
  * Base interface for all handlers. A handler belongs to the  object of business layer applying specific logic 
  * for each particular instrument i.e. EUR_RUB__TOD. 
  * Each instrument is implemented by a separate class and uniquely identified by getInstrumentID().
- * A symbol returned by getSideID must exactly match instrument id coming in particular feed.
- * see FPFFeedDispatcher for more info      
  *
  */
 public interface IFPFHandler {
@@ -23,9 +22,10 @@ public interface IFPFHandler {
 	/*
 	 * method that catches a message from dispatcher    
 	 */
-	OnCommand push(FPFMessage message) throws FastConnectionException;
+	OnCommand push(FPFMessage message) throws FXPException;
 	/*
-	 * 
+	 * calculate VWAP
 	 */
-	boolean checkRepeatMessage(String sRpt);
+	Double getVWAPBid(Integer size);
+	Double getVWAPAsk(Integer size);
 }

@@ -3,7 +3,6 @@ package com.fxsession.fastplus.handler.moex.depreciated;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
-import org.openfast.session.FastConnectionException;
 
 
 
@@ -12,6 +11,7 @@ import com.fxsession.fastplus.fpf.FPFMessage;
 import com.fxsession.fastplus.fpf.OnCommand;
 import com.fxsession.fastplus.fpf.depreciated.FPFTransaction;
 import com.fxsession.fastplus.handler.moex.MoexHandler;
+import com.fxsession.utils.FXPException;
 
 
 /**
@@ -40,7 +40,7 @@ public class MoexHandlerOLR  extends MoexHandler {
 
 
 	@Override
-	public OnCommand push(FPFMessage message) throws FastConnectionException {
+	public OnCommand push(FPFMessage message) throws FXPException {
 				OnCommand retval = OnCommand.ON_PROCESS;
 			try{	
 			    String rptseq = message.getFieldValue(RPTSEQ);
@@ -62,17 +62,9 @@ public class MoexHandlerOLR  extends MoexHandler {
 			    		             timemcs);		    
 			}catch(Exception e) {
 	        	mylogger.error(e);
-	        	throw new FastConnectionException(e);
+	        	throw new FXPException(e);
 	        }
 		return retval;
 	}
-   
-	/*
-	 * Storage part
-	 */
-	
-	
-
-	
 	
 }

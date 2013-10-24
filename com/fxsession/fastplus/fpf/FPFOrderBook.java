@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import com.fxsession.utils.FXPException;
 import com.fxsession.utils.FXPUtils;
 
+import com.fxsession.fastplus.fpf.OnCommand;
 /**
  * @author Dmitry Vulf
  *  
@@ -32,16 +33,6 @@ public class FPFOrderBook implements IFPFTransaction{
 	
 	private final TreeMap <Double,Integer> askBook = new TreeMap<Double,Integer>(Collections.reverseOrder());
 	
-	/**
-	 * Makes bid orderbook clone
-	 * @param object
-	 */
-	public void cloneBid(TreeMap <Double,Integer> object){
-		if (object == null)
-			throw new NullPointerException();
-		else
-			bidBook.putAll(object);
-	}
 
 	
 
@@ -49,30 +40,31 @@ public class FPFOrderBook implements IFPFTransaction{
 		instrumentId = _instrument;
 	}
 	
-	public void dispatch(String action, String type, String size, String price) throws FXPException{
-		
-		switch (action){
-		case T_ADD 		: 
-			if (type.equals(T_BID))  
-				addBid(size, price); 
-			else if (type.equals(T_ASK))
-				addAsk(size, price);  
-		break;
-		case T_CHANGE 	:   
-			if (type.equals(T_BID))
-				changeBid(size, price);
-			else if (type.equals(T_ASK))
-				changeAsk(size, price);
-		break;
-		case T_DELETE 	: 
-			if (type.equals(T_BID)) 
-				deleteBid(size,price); 
-			if (type.equals(T_ASK))
-				deleteAsk(size,price);
-		break;
-		default : throw new FXPException("unknown operation"); 
+	public OnCommand dispatch(String action, String type, String size, String price) throws FXPException{
+		OnCommand retval = OnCommand.ON_NULL;
+		if (type.equals(T_BID)){
+			switch (action){
+		    	case T_ADD 		: 
+				   addBid(size, price); break;
+		        case T_CHANGE 	:   
+				   changeBid(size, price); break;
+		        case T_DELETE 	: 
+				   deleteBid(size,price);  break;
+		        default : throw new FXPException("unknown operation");}
+		        retval = OnCommand.ON_CHANGED_BID;
+ 
+		}else if (type.equals(T_ASK)){
+		    switch (action){
+		    	case T_ADD 		: 
+				   addAsk(size, price); break;
+		        case T_CHANGE 	:   
+				   changeAsk(size, price); break;
+		        case T_DELETE 	: 
+				   deleteAsk(size,price);  break;
+		        default : throw new FXPException("unknown operation"); }
+		        retval = OnCommand.ON_CHANGED_ASK;
 		}
-	
+		return retval;
 	}
 	
 	/*	
@@ -137,7 +129,7 @@ public class FPFOrderBook implements IFPFTransaction{
 	 * so there is no much sense to count them      
 	 */
 	
-	public Double getBidWeightedBySize(Integer size, Integer topLevels2skip){
+	public Double getBidVWAP(Integer size, Integer topLevels2skip){
 		Double weighted = 0d;
 		Integer intrsize = size;
 		Integer level = 0;
@@ -163,8 +155,8 @@ public class FPFOrderBook implements IFPFTransaction{
 	/*
 	 * Calculate the full book
 	 */
-	public Double getBidWeightedBySize(Integer size){
-		return getBidWeightedBySize(size,0);
+	public Double getBidVWAP(Integer size){
+		return getBidVWAP(size,0);
 	}
 
 
@@ -173,17 +165,6 @@ public class FPFOrderBook implements IFPFTransaction{
 	 * 
 	 */
 	
-	/**
-	 * Makes ask orderbook clone
-	 * @param object
-	 */
-	public void cloneAsk(TreeMap <Double,Integer> object){
-		if (object == null)
-			throw new NullPointerException();
-		else
-			askBook.putAll(object);
-	}
-
 	
 	public void addAsk(String size, String px) throws FXPException {
 		Integer isize = FXPUtils.string2Int(size);
@@ -226,7 +207,7 @@ public class FPFOrderBook implements IFPFTransaction{
 	 * Returns price weighted by minimal size for given amount   
 	 */
 	
-	public Double getAskWeightedBySize(Integer size, Integer topLevels2skip){
+	public Double getAskVWAP(Integer size, Integer topLevels2skip){
 		Double weighted = 0d;
 		Integer intrsize = size;
 		Integer level = 0;
@@ -250,8 +231,8 @@ public class FPFOrderBook implements IFPFTransaction{
 		return ((remainder ==0) ? 0 : weighted/remainder);
 	}
 	
-	public Double getAskWeightedBySize(Integer size){
-		return getAskWeightedBySize(size,0);
+	public Double getAskWVAP(Integer size){
+		return getAskVWAP(size,0);
 	}
 	
 	
