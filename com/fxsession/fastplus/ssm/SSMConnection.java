@@ -19,20 +19,20 @@ import org.openfast.session.Connection;
 import org.apache.log4j.Logger;
 
 public class SSMConnection implements Connection {
-	static public final String GROUP_IP = "groupIp";
-	static public final String INTERFACE_IP ="interfaceIp";
-	static public final String PORT_N="port";
-	
-	private static Logger logger = Logger.getLogger(SSMConnection.class);
-	
-	
+        static public final String GROUP_IP = "groupIp";
+        static public final String INTERFACE_IP ="interfaceIp";
+        static public final String PORT_N="port";
+        
+        private static Logger logger = Logger.getLogger(SSMConnection.class);
+        
+        
     protected DatagramChannel datachannel;
     protected int port;
     protected InetAddress group;
     protected InetAddress ifaddr;
 
  
-	
+        
     public SSMConnection(DatagramChannel dc, int port, InetAddress group, InetAddress ifaddr) {
         this.datachannel = dc;
         this.port = port;
@@ -41,7 +41,7 @@ public class SSMConnection implements Connection {
     }
     
     public void open() {
-    	
+            
     }
     
     public void close() {

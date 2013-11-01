@@ -17,8 +17,8 @@ import org.apache.log4j.Logger;
 
 
 public class SSMEndpoint implements Endpoint{
-	
-	private static Logger mylogger = Logger.getLogger(SSMEndpoint.class);
+        
+        private static Logger mylogger = Logger.getLogger(SSMEndpoint.class);
 
     private   SSMConnection connection;
     
@@ -30,7 +30,7 @@ public class SSMEndpoint implements Endpoint{
     public SSMEndpoint(int port, String group, String ifaddr) {
         this.port = port;
         this.group = group;
-    	this.ifaddr = ifaddr;
+            this.ifaddr = ifaddr;
     }
     
     public String toString() {
@@ -42,19 +42,19 @@ public class SSMEndpoint implements Endpoint{
             .toString();
     }
 
-	public Connection connect() throws FastConnectionException {
-    	
+        public Connection connect() throws FastConnectionException {
+            
         try {
-           	InetAddress localHost = InetAddress.getLocalHost(); 
+                   InetAddress localHost = InetAddress.getLocalHost(); 
             NetworkInterface source_interf =  NetworkInterface.getByInetAddress(localHost);
             //Select a multicasting IP address
-       	    InetAddress groupIp = InetAddress.getByName(group);
-       	    DatagramChannel dc = DatagramChannel.open(StandardProtocolFamily.INET)
-       	                .setOption(StandardSocketOptions.SO_REUSEADDR, true)
-       	                .bind(new InetSocketAddress(port))
-       	                .setOption(StandardSocketOptions.IP_MULTICAST_IF, source_interf);
+                   InetAddress groupIp = InetAddress.getByName(group);
+                   DatagramChannel dc = DatagramChannel.open(StandardProtocolFamily.INET)
+                               .setOption(StandardSocketOptions.SO_REUSEADDR, true)
+                               .bind(new InetSocketAddress(port))
+                               .setOption(StandardSocketOptions.IP_MULTICAST_IF, source_interf);
 
-            //From now on, all multicast traffic generated in this socket will be output from the interface chosen	                
+            //From now on, all multicast traffic generated in this socket will be output from the interface chosen                        
             dc.join(groupIp,source_interf,InetAddress.getByName(ifaddr));
             //I haven't find any method detecting that join failed
             mylogger.info("joining group IP " +  group + ":" + port);
@@ -76,7 +76,7 @@ public class SSMEndpoint implements Endpoint{
     }
 
     public void close() {
-    	connection.close();
+            connection.close();
     }
 
 }

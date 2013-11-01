@@ -7,13 +7,13 @@ package com.fxsession.fastplus.listeners;
  *
  */
 public interface ISystemListener extends IListener{
-	/*
-	 * Receives heartbeat - all messages from all feeds
-	 */
-	public void OnHeartbeat();
-	
-	/*
-	 * Receives disconnect event.
-	 */
-	public void OnDisconnect();
+        /*
+         * Receives heartbeat - all messages from all feeds
+         */
+        public void OnHeartbeat();
+        
+        /*
+         * Receives disconnect event.
+         */
+        public void OnDisconnect();
 }

@@ -1,4 +1,3 @@
-
 package com.fxsession.fastplus.fpf;
 
 
@@ -15,17 +14,17 @@ import com.fxsession.utils.FXPException;
  *
  */
 public interface IFPFHandler {
-	/*
-	 * Return instrument ID. which is passed in constructor
-	 */
-	String getInstrumentID();
-	/*
-	 * method that catches a message from dispatcher    
-	 */
-	OnCommand push(FPFMessage message) throws FXPException;
-	/*
-	 * calculate VWAP
-	 */
-	Double getVWAPBid(Integer size);
-	Double getVWAPAsk(Integer size);
+        /*
+         * Return instrument ID. which is passed in constructor
+         */
+        String getInstrumentID();
+        /*
+         * method that catches a message from dispatcher    
+         */
+        FPFCommand push(FPFMessage message) throws FXPException;
+        /*
+         * calculate VWAP
+         */
+        Double getVWAPBid(Integer size);
+        Double getVWAPAsk(Integer size);
 }

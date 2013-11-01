@@ -23,7 +23,7 @@ public class SSMInputStream extends InputStream{
 
 
 /*
- *   to debug:	
+ *   to debug:        
     int lim = buffer.limit();
     int pos = buffer.position();
 */
@@ -32,7 +32,7 @@ public class SSMInputStream extends InputStream{
  
     public int read() throws IOException {
         if (!buffer.hasRemaining()) {
-        	buffer.clear();
+                buffer.clear();
             datachannel.receive(buffer);
             buffer.flip();
         }
